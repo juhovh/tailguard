@@ -41,7 +41,6 @@ echo "** Start Tailscale daemon   **"
 echo "******************************"
 export TS_AUTH_ONCE="true"
 export TS_USERSPACE="false"
-export TS_EXTRA_ARGS="--advertise-exit-node"
 export TS_STATE_DIR="/tailscale/state"
 export TS_KUBE_SECRET=""
 /usr/local/bin/containerboot

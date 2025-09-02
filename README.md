@@ -12,7 +12,7 @@ The network topology will look roughly like this:
 ```
 
 As long as you have access to a server as close to the WireGuard server as
-possible (ideally with minimal ping), for example a VPS, you can connect any
+possible (ideally with a minimal ping), for example a VPS, you can connect any
 WireGuard device to your tailnet.
 
 ## Installation
@@ -37,9 +37,9 @@ Next you need to open docker-compose.yml and modify it as follows:
       - TS_EXTRA_ARGS=--advertise-exit-node
       - TS_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxxxxxxxxx
 ```
-This will use the device wg0 and therefore the wg0.conf file for wireguard. It
+This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
 will connect to the tailnet with hostname "tailguard", advertise the
-"192.168.68.0/22" route for other tailnet hosts, advertise itself as an exit
+"192.168.68.0/22" route to other tailnet hosts, advertise itself as an exit
 node, and authenticate with the given authkey.
 
 Now if you run `docker-compose up` once you can remove the `TS_AUTHKEY` and it
