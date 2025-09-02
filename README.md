@@ -42,7 +42,7 @@ will connect to the tailnet with hostname "tailguard", advertise the
 "192.168.68.0/22" route to other tailnet hosts, advertise itself as an exit
 node, and authenticate with the given authkey.
 
-Now if you run `docker-compose up` once you can remove the `TS_AUTHKEY` and it
+Now if you run `docker-compose up` once, you can remove the `TS_AUTHKEY` and it
 should keep working, as long as you keep your `state/` directory intact.
 
 That's it, happy networking!

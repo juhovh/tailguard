@@ -30,7 +30,7 @@ echo "** Start WireGuard device   **"
 echo "******************************"
 echo "Device name: ${WG_DEVICE}"
 /usr/bin/wg-quick up "${WG_DEVICE}"
-(crontab -l; echo -e "# Re-resolve WireGuard interface DNS\n*/30\t*\t*\t*\t*\t/tailscale/reresolve-dns.sh \"${WG_DEVICE}\"") | crontab -
+(crontab -l; echo -e "# Re-resolve WireGuard interface DNS\n*/30\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"") | crontab -
 
 # Masquerade everything from tailscale subnet to wireguard
 iptables -t nat -A POSTROUTING -o "${WG_DEVICE}" -s 100.64.0.0/10 -j MASQUERADE
@@ -41,6 +41,6 @@ echo "** Start Tailscale daemon   **"
 echo "******************************"
 export TS_AUTH_ONCE="true"
 export TS_USERSPACE="false"
-export TS_STATE_DIR="/tailscale/state"
+export TS_STATE_DIR="/tailguard/state"
 export TS_KUBE_SECRET=""
 /usr/local/bin/containerboot
