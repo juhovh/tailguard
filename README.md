@@ -6,14 +6,36 @@ locked in and/or does not support Tailscale binaries.
 
 The network topology will look roughly like this:
 ```
-  +---------+        +-----------+        +-----------+
-  | tailnet | <----> | TailGuard | <----> | WireGuard |
-  +---------+        +-----------+        +-----------+
+  +---------+
+  | device1 |\
+  +---------+ \                      VPS
+  +---------+  \ +---------+    +-----------+      +-----------+
+  | device2 |----| tailnet |----| TailGuard |<---->| WireGuard |
+  +---------+  / +---------+    +-----------+      +-----------+
+  +---------+ /
+  | device3 |/
+  +---------+
 ```
 
-As long as you have access to a server as close to the WireGuard server as
-possible (ideally with a minimal ping), for example a VPS, you can connect any
-WireGuard device to your tailnet.
+As usual, the tailnet is virtual and in reality connections are point-to-point,
+but all connections to WireGuard are tunneled through the TailGuard server with
+a fixed and persistent connection. As long as you have access to a server as
+close to the WireGuard server as possible (ideally with a minimal ping), for
+example a VPS, you can connect any WireGuard device to your tailnet.
+
+## Benefits
+
+Why would you want to do this? For most use cases it may be easier to connect
+your device with WireGuard directly, but there are a couple of benefits with
+this bridged approach:
+- the WireGuard tunnel private key is stored only on a single machine, making
+  the key management less work
+- if you have a new device, you can simply log in to your tailnet with SSO,
+  without having to transfer keys
+- it's easier to switch between exit nodes in your tailnet, without having to
+  reconnect to different VPNs
+- you can have access to both your tailnet and WireGuard concurrently on your
+  mobile device, which doesn't support multiple VPNs
 
 ## Installation
 
@@ -34,7 +56,7 @@ Next you need to open docker-compose.yml and modify it as follows:
       - WG_DEVICE=wg0
       - TS_HOSTNAME=tailguard
       - TS_ROUTES=192.168.68.0/22
-      - TS_EXTRA_ARGS=--advertise-exit-node
+      - TS_EXTRA_ARGS=--advertise-exit-node --accept-routes
       - TS_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxxxxxxxxx
 ```
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
