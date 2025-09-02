@@ -1,6 +1,6 @@
 FROM tailscale/tailscale:v1.86.5
 
-WORKDIR /tailscale
+WORKDIR /tailguard
 
 COPY bin/* ./
 RUN chmod +x *.sh
