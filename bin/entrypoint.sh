@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 if [ -n "${TS_AUTHKEY}" ]; then
   if case "${TS_AUTHKEY}" in "tskey-auth-"*) true ;; *) false ;; esac; then
