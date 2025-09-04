@@ -39,10 +39,10 @@ this bridged approach:
 
 ## Installation
 
-Let's imagine you have a WireGuard server that is able to accept any IPv4
-routes (i.e. `AllowedIPs = 0.0.0.0/0`), and its local LAN network is
-192.168.68.0/22. You should first download a WireGuard client config and
-save it as `wg0.conf` under `config/`.
+Let's imagine you have a WireGuard server running on 192.168.68.1 that is able
+to accept any IPv4 routes (i.e. `AllowedIPs = 0.0.0.0/0`), and its local LAN
+network is 192.168.68.0/22. You should first download a WireGuard client config
+and save it as `wg0.conf` under `config/`.
 
 After you have the config downloaded, you need to generate a temporary auth key
 for Tailscale. You can do this from https://login.tailscale.com/admin/machines
@@ -55,14 +55,16 @@ Next you need to open docker-compose.yml and modify it as follows:
     environment:
       - WG_DEVICE=wg0
       - TS_HOSTNAME=tailguard
+      - TS_DEST_IP=192.168.68.1
       - TS_ROUTES=192.168.68.0/22
       - TS_EXTRA_ARGS=--advertise-exit-node --accept-routes
       - TS_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxxxxxxxxx
 ```
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
-will connect to the tailnet with hostname "tailguard", advertise the
-"192.168.68.0/22" route to other tailnet hosts, advertise itself as an exit
-node, and authenticate with the given authkey.
+will connect to the tailnet with hostname "tailguard", forward all connections
+to itself to the router behind the tunnel, advertise the "192.168.68.0/22"
+route to other tailnet hosts, advertise itself as an exit node, and
+authenticate with the given authkey.
 
 Now if you run `docker compose up` once, you can remove the `TS_AUTHKEY` and it
 should keep working, as long as you keep your `state/` directory intact.
