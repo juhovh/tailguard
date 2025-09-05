@@ -9,9 +9,6 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun
-    environment:
-      - WG_DEVICE=wg0
-      - TS_PORT=41641
     sysctls:
       - net.ipv4.ip_forward=1
       - net.ipv6.conf.all.forwarding=1
