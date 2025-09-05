@@ -53,12 +53,10 @@ Next you need to open docker-compose.yml and modify it as follows:
 
 ```
     environment:
-      - WG_DEVICE=wg0
-      - TS_PORT=41641
       - TS_HOSTNAME=tailguard
       - TS_DEST_IP=192.168.68.1
       - TS_ROUTES=192.168.68.0/22
-      - TS_EXTRA_ARGS=--advertise-exit-node
+      - TS_EXTRA_ARGS=--advertise-exit-node --accept-routes
       - TS_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxxxxxxxxx
 ```
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
