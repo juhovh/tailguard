@@ -22,5 +22,15 @@ services:
       timeout: 10s
       retries: 3
     restart: unless-stopped
+    networks:
+      - ip6net
     ports:
       - 41641:41641/udp
+
+networks:
+  ip6net:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd76:5ca1:ab1e::/64
+
