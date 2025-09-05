@@ -33,7 +33,7 @@ echo "Device name: ${WG_DEVICE}"
 /usr/bin/wg-quick up "${WG_DEVICE}"
 
 # Setup crontab to include reresolve-dns.sh script and run cron
-echo -e "# Re-resolve WireGuard interface DNS\n*/30\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
+echo -e "# Re-resolve WireGuard interface DNS\n*/10\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
 echo "******************************"
