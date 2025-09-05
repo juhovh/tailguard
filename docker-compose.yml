@@ -22,4 +22,4 @@ services:
       retries: 3
     restart: unless-stopped
     ports:
-      - 41641/udp
+      - 41641:41641/udp
