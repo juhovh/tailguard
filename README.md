@@ -54,6 +54,7 @@ Next you need to open docker-compose.yml and modify it as follows:
 ```
     environment:
       - WG_DEVICE=wg0
+      - TS_PORT=41641
       - TS_HOSTNAME=tailguard
       - TS_DEST_IP=192.168.68.1
       - TS_ROUTES=192.168.68.0/22

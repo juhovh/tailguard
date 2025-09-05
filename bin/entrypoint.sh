@@ -43,6 +43,6 @@ export TS_AUTH_ONCE="true"
 export TS_USERSPACE="false"
 export TS_STATE_DIR="/tailguard/state"
 export TS_KUBE_SECRET=""
-export TS_TAILSCALED_EXTRA_ARGS="--port=41641"
+export TS_TAILSCALED_EXTRA_ARGS="--port=${TS_PORT}"
 
 /usr/local/bin/containerboot
