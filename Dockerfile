@@ -10,4 +10,7 @@ RUN \
 COPY bin/* ./
 RUN chmod +x *.sh
 
+HEALTHCHECK --interval=5m --timeout=3s --start-period=10s --start-interval=1s --retries=3 \
+  CMD ["./healthcheck.sh"]
+
 ENTRYPOINT ["./entrypoint.sh"]
