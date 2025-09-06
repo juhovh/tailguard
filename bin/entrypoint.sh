@@ -44,8 +44,11 @@ echo "******************************"
 echo "Device name: ${WG_DEVICE}"
 /usr/bin/wg-quick up "${WG_DEVICE}"
 
-# Setup crontab to include reresolve-dns.sh script and run cron
-echo -e "# Re-resolve WireGuard interface DNS\n*/10\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
+# Setup backup DNS, crontab to include reresolve-dns.sh script, run cron
+ip route add $(ip route show default | sed -e 's/default/1.1.1.1/')
+ip route add $(ip route show default | sed -e 's/default/1.0.0.1/')
+(resolvconf -l "${WG_DEVICE}" 2>/dev/null; echo -e "nameserver 1.1.1.1\nnameserver 1.0.0.1") | resolvconf -a "${WG_DEVICE}"
+echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
 echo "******************************"
