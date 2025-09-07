@@ -62,9 +62,11 @@ export TS_EXTRA_ARGS="$(/tailguard/tailscale-args.sh "${WG_DEVICE}")"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 
 # Create firewall chains for enforcing tunneling between devices
+iptables -P FORWARD DROP
 iptables -N tg-forward
 iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
+ip6tables -P FORWARD DROP
 ip6tables -N tg-forward
 ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
