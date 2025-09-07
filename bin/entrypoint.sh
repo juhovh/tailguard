@@ -58,6 +58,7 @@ export TS_AUTH_ONCE="true"
 export TS_USERSPACE="false"
 export TS_STATE_DIR="/tailguard/state"
 export TS_KUBE_SECRET=""
+export TS_EXTRA_ARGS="$(./tailscale-args.sh)"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 
 # Create firewall chains for enforcing tunneling between devices
