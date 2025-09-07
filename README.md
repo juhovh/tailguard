@@ -109,8 +109,8 @@ ip route add fd7a:115c:a1e0::/48 via fd00:ed7c:a960:6e9b::2 dev wgserver
 
 If you have additional subnets in your tailnet (e.g. `192.168.1.0/24`) that
 you'd like to access, just add similar routing rules for those. TailGuard should
-take care of all the forwarding all published subnets to the tailnet, as long as
-it is able to receive packets through the WireGuard tunnel first.
+take care of forwarding all the published subnets to the tailnet, as long as it
+is able to receive packets through the WireGuard tunnel first.
 
 ## License
  

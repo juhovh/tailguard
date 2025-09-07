@@ -1,30 +1,24 @@
 #!/bin/sh
 
-# Make sure Tailscale IPv4 packets are forwarded to WireGuard
-iptables -C FORWARD -j ts-forward 2>/dev/null
-if [ $? -ne 0 ]; then
-  echo "The IPv4 firewall rules are not set up yet for, failing healthcheck"
-  exit 1
-else
-  iptables -C FORWARD -j tg-forward 2>/dev/null
+update_firewall() {
+  $iptables -C $CHAIN -j "ts-$chain" 2>/dev/null
   if [ $? -ne 0 ]; then
-    echo "Enforcing IPv4 firewall rules"
-    iptables -I FORWARD 1 -j tg-forward
+    echo "The $iptables $chain rules are not set up yet for, failing healthcheck"
+    exit 1
   fi
-fi
+  $iptables -C $CHAIN -j "tg-$chain" 2>/dev/null
+  if [ $? -ne 0 ]; then
+    echo "Enforcing $iptables $chain rules"
+    $iptables -I $CHAIN 1 -j "tg-$chain"
+  fi
+}
 
-# Make sure Tailscale IPv6 packets are forwarded to WireGuard
-ip6tables -C FORWARD -j ts-forward 2>/dev/null
-if [ $? -ne 0 ]; then
-  echo "The IPv6 firewall rules are not set up yet, failing healthcheck"
-  exit 1
-else
-  ip6tables -C FORWARD -j tg-forward 2>/dev/null
-  if [ $? -ne 0 ]; then
-    echo "Enforcing IPv6 firewall rules"
-    ip6tables -I FORWARD 1 -j tg-forward
-  fi
-fi
+iptables="iptables" CHAIN="INPUT" chain="input"; update_firewall
+iptables="iptables" CHAIN="FORWARD" chain="forward"; update_firewall
+iptables="iptables -t nat" CHAIN="POSTROUTING" chain="postrouting"; update_firewall
+iptables="ip6tables" CHAIN="INPUT" chain="input"; update_firewall
+iptables="ip6tables" CHAIN="FORWARD" chain="forward"; update_firewall
+iptables="ip6tables -t nat" CHAIN="POSTROUTING" chain="postrouting"; update_firewall
 
 # Check Tailscale health using the health check endpoint
 HEALTHZ_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:9002/healthz")"

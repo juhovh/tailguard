@@ -52,6 +52,51 @@ echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresol
 crond
 
 echo "******************************"
+echo "** Setup TailGuard firewall **"
+echo "******************************"
+
+# Drop all incoming packets by default, unless localhost or required
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -P INPUT DROP
+
+# Create a chain for TailGuard input, dropping incoming connections
+iptables -N tg-input
+iptables -A tg-input -i "${TS_DEVICE}" -j DROP
+
+# Create a chain for TailGuard forward, drop external destinations
+iptables -P FORWARD DROP
+iptables -N tg-forward
+iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
+iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
+
+# Create a chain for TailGuard postrouting, masquerade packets
+iptables -t nat -N tg-postrouting
+iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
+
+# Drop all incoming packets by default, unless localhost or required
+ip6tables -A INPUT -i lo -j ACCEPT
+ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+ip6tables -P INPUT DROP
+
+# Create a chain for TailGuard input, dropping incoming connections
+ip6tables -N tg-input
+ip6tables -A tg-input -i "${TS_DEVICE}" -j DROP
+
+# Create a chain for TailGuard forward, drop external destinations
+ip6tables -P FORWARD DROP
+ip6tables -N tg-forward
+ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
+ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
+
+# Create a chain for TailGuard postrouting, masquerade packets
+ip6tables -t nat -N tg-postrouting
+ip6tables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
+
+echo "All rules set up, waiting for healthcheck for finalisation"
+
+echo "******************************"
 echo "** Start Tailscale daemon   **"
 echo "******************************"
 
@@ -76,19 +121,5 @@ export TS_USERSPACE="false"
 
 export TS_EXTRA_ARGS="$(/tailguard/tailscale-args.sh "${WG_DEVICE}")"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
-
-# Create firewall chains for enforcing tunneling between devices
-iptables -P FORWARD DROP
-iptables -N tg-forward
-iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
-iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
-ip6tables -P FORWARD DROP
-ip6tables -N tg-forward
-ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
-ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
-
-# Set up masquerading, to allow traffic from WireGuard to Tailscale
-iptables -t nat -A POSTROUTING -o "${TS_DEVICE}" -j MASQUERADE
-ip6tables -t nat -A POSTROUTING -o "${TS_DEVICE}" -j MASQUERADE
 
 /usr/local/bin/containerboot
