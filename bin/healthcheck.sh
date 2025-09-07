@@ -25,3 +25,8 @@ else
     ip6tables -I FORWARD 1 -j tg-forward
   fi
 fi
+
+# Check Tailscale health using the health check endpoint
+HEALTHZ_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:9002/healthz")"
+echo "Tailscale health endpoint returned response code: ${HEALTHZ_CODE}"
+if [ $HEALTHZ_CODE != "200" ]; then exit 1; fi
