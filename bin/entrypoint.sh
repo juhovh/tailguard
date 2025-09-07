@@ -62,8 +62,10 @@ export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 
 # Create firewall chains for enforcing tunneling between devices
 iptables -N tg-forward
-iptables -A tg-forward -s 100.64.0.0/10 ! -o "${WG_DEVICE}" -j DROP
+iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
+iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 ip6tables -N tg-forward
-ip6tables -A tg-forward -s fd7a:115c:a1e0::/48 ! -o "${WG_DEVICE}" -j DROP
+ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
+ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 
 /usr/local/bin/containerboot
