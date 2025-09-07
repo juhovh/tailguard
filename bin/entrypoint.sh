@@ -69,4 +69,8 @@ ip6tables -N tg-forward
 ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 
+# Set up masquerading, to allow traffic from WireGuard to Tailscale
+iptables -t nat -A POSTROUTING -o "${TS_DEVICE}" -j MASQUERADE
+ip6tables -t nat -A POSTROUTING -o "${TS_DEVICE}" -j MASQUERADE
+
 /usr/local/bin/containerboot
