@@ -47,33 +47,48 @@ That's it, happy networking!
 
 ### Advanced settings
 
-Let's imagine you have a WireGuard server running on 192.168.68.1 that is able
-to accept any IPv4 routes (i.e. `AllowedIPs = 0.0.0.0/0`), and its local LAN
-network is 192.168.68.0/22. You have already downloaded the WireGuard client
-config for this tunnel and saved it as `wg0.conf` under `config/`. Make sure
-that the subnet 192.168.68.0/22 is explicitly mentioned in the AllowedIPs
-section in addition to 0.0.0.0/0, for TailGuard to pick it up.
+Let's imagine you have a WireGuard server running on 192.168.8.1 that is able
+to accept any routes, and its local LAN network is 192.168.8.0/24. You have
+already downloaded the WireGuard client config for this tunnel and saved it as
+`wg0.conf` under `config/`. Make sure that the subnet 192.168.8.0/24 is
+explicitly mentioned in the AllowedIPs section in addition to 0.0.0.0/0, for
+TailGuard to pick it up. It should look something like this:
+
+```
+[Interface]
+PrivateKey = <REDACTED>
+Address = 10.1.0.2/24,fd00:ed7c:a960:6e9b::2/64
+DNS = 10.1.0.1,fd00:ed7c:a960:6e9b::1
+MTU = 1420
+
+[Peer]
+PublicKey = <REDACTED>
+PresharedKey = <REDACTED>
+AllowedIPs = 0.0.0.0/0, ::/0, 192.168.8.0/24
+Endpoint = <REDACTED>:51820
+PersistentKeepalive = 25
+```
 
 Next you can open docker-compose.yml and modify it as follows:
 
 ```
     environment:
-      - TS_DEST_IP=192.168.68.1
+      - TS_DEST_IP=192.168.8.1
 ```
 
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
 will connect to the tailnet with hostname "tailguard", forward all connections
 targeting itself to the router behind the tunnel, advertise the
-"192.168.68.0/22" route to other tailnet hosts, advertise itself as an exit
+"192.168.8.0/24" route to other tailnet hosts, advertise itself as an exit
 node, and authenticate with the given authkey.
 
 Supported configuration parameters through environment:
-- `WG_DEVICE` - WireGuard device name, must be valid and match config file name
-- `TS_DEVICE` - Tailscale device name, must be valid and defaults to tailscale0
-- `TS_PORT` - Tailscale port number, should be exposed and defaults to 41641
+- `WG_DEVICE` - WireGuard device name, must be valid and match config file name (**default:** wg0)
+- `TS_DEVICE` - Tailscale device name, must be a valid device name (**default:** tailscale0)
+- `TS_PORT` - Tailscale port number, should be exposed by Docker (**default:** 41641)
 - `TS_AUTHKEY` - Tailscale auth key for authentication if used
 - `TS_DEST_IP` - Destination IP to route Tailscale traffic to
-- `TS_HOSTNAME` - Tailscale hostname for this device if defined
+- `TS_HOSTNAME` - Tailscale hostname for this device if used
 
 ### Two-way routing between the networks
 
