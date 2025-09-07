@@ -39,35 +39,55 @@ this bridged approach:
 
 ## Installation
 
+The simplest way to start TailGuard is to simply download a WireGuard client
+config and save it as `wg0.conf` under `config/`. After that you can run `docker
+compose up` and login to Tailscale through the URL shown in the logs.
+
+That's it, happy networking!
+
+### Advanced settings
+
 Let's imagine you have a WireGuard server running on 192.168.68.1 that is able
 to accept any IPv4 routes (i.e. `AllowedIPs = 0.0.0.0/0`), and its local LAN
-network is 192.168.68.0/22. You should first download a WireGuard client config
-and save it as `wg0.conf` under `config/`.
+network is 192.168.68.0/22. You have already downloaded the WireGuard client
+config for this tunnel and saved it as `wg0.conf` under `config/`. Make sure
+that the subnet 192.168.68.0/22 is explicitly mentioned in the AllowedIPs
+section in addition to 0.0.0.0/0, for TailGuard to pick it up.
 
-After you have the config downloaded, you need to generate a temporary auth key
-for Tailscale. You can do this from https://login.tailscale.com/admin/machines
-by selecting "Add device" -> "Linux server" -> "Generate install script". You
-need to copy the `--auth-key=` argument value, this is your single use auth key.
-
-Next you need to open docker-compose.yml and modify it as follows:
+Next you can open docker-compose.yml and modify it as follows:
 
 ```
     environment:
-      - TS_HOSTNAME=tailguard
       - TS_DEST_IP=192.168.68.1
-      - TS_ROUTES=192.168.68.0/22
-      - TS_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxxxxxxxxx
 ```
+
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
 will connect to the tailnet with hostname "tailguard", forward all connections
-to itself to the router behind the tunnel, advertise the "192.168.68.0/22"
-route to other tailnet hosts, advertise itself as an exit node, and
-authenticate with the given authkey.
+targeting itself to the router behind the tunnel, advertise the
+"192.168.68.0/22" route to other tailnet hosts, advertise itself as an exit
+node, and authenticate with the given authkey.
 
-Now if you run `docker compose up` once, you can remove the `TS_AUTHKEY` and it
-should keep working, as long as you keep your `state/` directory intact.
+### Two-way routing between the networks
 
-That's it, happy networking!
+Unlike Tailscale, WireGuard itself does not handle any routing. Therefore, the
+WireGuard subnets and routes are automatically advertised on the Tailscale
+network, but it doesn't work the other way around.
+
+Let's say your TailGuard node has an IP addresses `10.1.0.2` and
+`fd00:ed7c:a960:6e9b::2` for the WireGuard tunnel. You likely want to add at
+least routes `100.64.0.0/10` and `fd7a:115c:a1e0::/48` (Tailscale private
+address spaces) to be routed through `10.5.5.2`. You can do this through
+something along the lines of:
+
+```
+ip route add 100.64.0.0/10 via 10.1.0.2 dev wgserver
+ip route add fd7a:115c:a1e0::/48 via fd00:ed7c:a960:6e9b::2 dev wgserver
+```
+
+If you have additional subnets in your tailnet (e.g. `192.168.1.0/24`) that
+you'd like to access, just add similar routing rules for those. TailGuard should
+take care of all the forwarding all published subnets to the tailnet, as long as
+it is able to receive packets through the WireGuard tunnel first.
 
 ## License
  

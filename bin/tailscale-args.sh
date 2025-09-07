@@ -16,12 +16,18 @@ CONFIG_FILE="$1"
 [[ $CONFIG_FILE =~ /?([a-zA-Z0-9_=+.-]{1,15})\.conf$ ]]
 INTERFACE="${BASH_REMATCH[1]}"
 DEFAULT_FOUND=0
+SUBNETS_FOUND=""
 
 process_peer() {
 	[[ $PEER_SECTION -ne 1 || -z $ALLOWED_IPS ]] && return 0
 	for ip in ${ALLOWED_IPS//,/}; do
-		if [ "$ip" = "0.0.0.0/0" ]; then DEFAULT_FOUND=1; fi
-		if [ "$ip" = "::/0" ]; then DEFAULT_FOUND=1; fi
+		if [ "$ip" = "0.0.0.0/0" ]; then DEFAULT_FOUND=1; continue; fi
+		if [ "$ip" = "::/0" ]; then DEFAULT_FOUND=1; continue; fi
+		if [ -z "$SUBNETS_FOUND" ]; then
+			SUBNETS_FOUND="$ip"
+		else
+			SUBNETS_FOUND="$SUBNETS_FOUND,$ip"
+		fi
 	done
 	reset_peer_section
 }
@@ -46,8 +52,7 @@ while read -r line || [[ -n $line ]]; do
 done < "$CONFIG_FILE"
 process_peer
 
-if [ $DEFAULT_FOUND -eq 1 ]; then
-	echo "--accept-routes --advertise-exit-node"
-else
-	echo "--accept-routes"
-fi
+TS_EXTRA_ARGS="--accept-routes"
+if [ $DEFAULT_FOUND -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
+if [ -n "$SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=\"$SUBNETS_FOUND\""; fi
+echo "$TS_EXTRA_ARGS"
