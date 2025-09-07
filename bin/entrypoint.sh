@@ -54,10 +54,26 @@ crond
 echo "******************************"
 echo "** Start Tailscale daemon   **"
 echo "******************************"
+
+# See https://tailscale.com/kb/1282/docker for supported parameters
+export TS_ACCEPT_DNS="false"
 export TS_AUTH_ONCE="true"
-export TS_USERSPACE="false"
-export TS_STATE_DIR="/tailguard/state"
+# skip TS_AUTHKEY, handled earlier
+# skip TS_DEST_IP, allow passthrough
+export -n TS_HEALTHCHECK_ADDR_PORT
+export TS_LOCAL_ADDR_PORT="127.0.0.1:9002"
+export TS_ENABLE_HEALTH_CHECK="true"
+export TS_ENABLE_METRICS="false"
+# skip TS_HOSTNAME, allow passthrough
 export TS_KUBE_SECRET=""
+export -n TS_OUTBOUND_HTTP_PROXY_LISTEN
+export -n TS_ROUTES
+export -n TS_SERVE_CONFIG
+export -n TS_SOCKET
+export -n TS_SOCKS5_SERVER
+export TS_STATE_DIR="/tailguard/state"
+export TS_USERSPACE="false"
+
 export TS_EXTRA_ARGS="$(/tailguard/tailscale-args.sh "${WG_DEVICE}")"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 

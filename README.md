@@ -67,6 +67,14 @@ targeting itself to the router behind the tunnel, advertise the
 "192.168.68.0/22" route to other tailnet hosts, advertise itself as an exit
 node, and authenticate with the given authkey.
 
+Supported configuration parameters through environment:
+- `WG_DEVICE` - WireGuard device name, must be valid and match config file name
+- `TS_DEVICE` - Tailscale device name, must be valid and defaults to tailscale0
+- `TS_PORT` - Tailscale port number, should be exposed and defaults to 41641
+- `TS_AUTHKEY` - Tailscale auth key for authentication if used
+- `TS_DEST_IP` - Destination IP to route Tailscale traffic to
+- `TS_HOSTNAME` - Tailscale hostname for this device if defined
+
 ### Two-way routing between the networks
 
 Unlike Tailscale, WireGuard itself does not handle any routing. Therefore, the
