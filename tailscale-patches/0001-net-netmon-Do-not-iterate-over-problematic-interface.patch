@@ -1,0 +1,32 @@
+From 4cb8d58523cbbcf75f62f876ccaec6fe14c5cb61 Mon Sep 17 00:00:00 2001
+From: Cezar Craciunoiu <cezar.craciunoiu@gmail.com>
+Date: Wed, 8 Jan 2025 16:43:54 +0200
+Subject: [PATCH 1/2] net/netmon: Do not iterate over problematic interfaces
+
+Iterating interfaces happens unrelated to the previous problematic
+interface check. Check here also to save time on initialization.
+
+Updates #1552
+
+Signed-off-by: Cezar Craciunoiu <cezar.craciunoiu@unikraft.io>
+---
+ net/netmon/state.go | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/net/netmon/state.go b/net/netmon/state.go
+index bd0960768..4f8788907 100644
+--- a/net/netmon/state.go
++++ b/net/netmon/state.go
+@@ -203,6 +203,9 @@ func ForeachInterface(fn func(Interface, []netip.Prefix)) error {
+ // the interface, and Bits are the subnet mask.
+ func (ifaces InterfaceList) ForeachInterface(fn func(Interface, []netip.Prefix)) error {
+ 	for _, iface := range ifaces {
++		if isProblematicInterface(iface.Interface) {
++			continue
++		}
+ 		addrs, err := iface.Addrs()
+ 		if err != nil {
+ 			return err
+-- 
+2.51.0
+

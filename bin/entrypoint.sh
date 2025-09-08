@@ -119,6 +119,7 @@ export -n TS_SOCKS5_SERVER
 export TS_STATE_DIR="/tailguard/state"
 export TS_USERSPACE="false"
 
+export TS_NETMON_IGNORE="${WG_DEVICE}"
 export TS_EXTRA_ARGS="$(/tailguard/tailscale-args.sh "${WG_DEVICE}")"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 
