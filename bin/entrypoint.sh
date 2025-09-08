@@ -61,9 +61,10 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -P INPUT DROP
 
 # Create a chain for TailGuard input, dropping incoming connections
+# This is only for TS_DEVICE, which Tailscale accepts by default
 iptables -N tg-input
+iptables -A tg-input -i "${TS_DEVICE}" -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A tg-input -i "${TS_DEVICE}" -j DROP
-iptables -A tg-input -i "${WG_DEVICE}" -j DROP
 
 # Create a chain for TailGuard forward, drop external destinations
 iptables -P FORWARD DROP
@@ -82,9 +83,10 @@ ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -P INPUT DROP
 
 # Create a chain for TailGuard input, dropping incoming connections
+# This is only for TS_DEVICE, which Tailscale accepts by default
 ip6tables -N tg-input
+ip6tables -A tg-input -i "${TS_DEVICE}" -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A tg-input -i "${TS_DEVICE}" -j DROP
-ip6tables -A tg-input -i "${WG_DEVICE}" -j DROP
 
 # Create a chain for TailGuard forward, drop external destinations
 ip6tables -P FORWARD DROP
