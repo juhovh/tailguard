@@ -125,4 +125,7 @@ export TS_NETMON_IGNORE="${WG_DEVICE}"
 export TS_EXTRA_ARGS="$(/tailguard/tailscale-args.sh "${WG_DEVICE}")"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 
+echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
+echo "Starting tailscale with args: ${TS_EXTRA_ARGS}"
+
 /usr/local/bin/containerboot
