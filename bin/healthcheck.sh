@@ -3,12 +3,12 @@
 update_firewall() {
   $iptables -C $CHAIN -j "ts-$chain" 2>/dev/null
   if [ $? -ne 0 ]; then
-    echo "The $iptables $chain rules are not set up yet for, failing healthcheck"
+    echo "The $iptables ts-$chain rules are not set up yet, failing healthcheck"
     exit 1
   fi
   $iptables -C $CHAIN -j "tg-$chain" 2>/dev/null
   if [ $? -ne 0 ]; then
-    echo "Enforcing $iptables $chain rules"
+    echo "Enforcing $iptables tg-$chain rules"
     $iptables -I $CHAIN 1 -j "tg-$chain"
   fi
 }

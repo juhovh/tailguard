@@ -77,10 +77,10 @@ Next you can open docker-compose.yml and modify it as follows:
 ```
 
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
-will connect to the tailnet with hostname "tailguard", forward all connections
-targeting itself to the router behind the tunnel, advertise the
-"192.168.8.0/24" route to other tailnet hosts, advertise itself as an exit
-node, and authenticate with the given authkey.
+will connect to the tailnet, forward all connections targeting itself to the
+router behind the tunnel, advertise the "192.168.8.0/24" route to other tailnet
+hosts, advertise itself as an exit node, and authenticate with the given
+authkey.
 
 Supported configuration parameters through environment:
 - `WG_DEVICE` - WireGuard device name, must be valid and match config file name (**default:** wg0)
@@ -99,8 +99,8 @@ network, but it doesn't work the other way around.
 Let's say your TailGuard node has an IP addresses `10.1.0.2` and
 `fd00:ed7c:a960:6e9b::2` for the WireGuard tunnel. You likely want to add at
 least routes `100.64.0.0/10` and `fd7a:115c:a1e0::/48` (Tailscale private
-address spaces) to be routed through `10.5.5.2`. You can do this through
-something along the lines of:
+address spaces) to be routed through `10.5.5.2`. You can do this with something
+along the lines of:
 
 ```
 ip route add 100.64.0.0/10 via 10.1.0.2 dev wgserver

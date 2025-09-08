@@ -5,6 +5,7 @@
 # Copyright (C) 2025 Juho Vähä-Herttua <juhovh@iki.fi>. All Rights Reserved.
 
 # Checks if WireGuard config has a default route, adds --advertise-exit-node if yes
+# Parses all subnets from AllowedIPs and adds --advertise-routes= with them if found
 
 set -e
 shopt -s nocasematch

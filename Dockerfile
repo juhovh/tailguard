@@ -4,8 +4,8 @@ ARG TS_VERSION="v1.86.5"
 
 WORKDIR /go/src/tailscale
 
-RUN\
-  apk add --no-cache git && \
+RUN \
+  apk add --update --no-cache git && \
   git clone --branch "$TS_VERSION" https://github.com/tailscale/tailscale.git .
 
 # Apply patches from branch in https://github.com/tailscale/tailscale/pull/14575
@@ -36,6 +36,6 @@ COPY bin/* ./
 RUN chmod +x *.sh
 
 HEALTHCHECK --interval=1m --timeout=10s --start-period=10s --start-interval=1s --retries=3 \
-  CMD ["./healthcheck.sh"]
+  CMD ["/tailguard/healthcheck.sh"]
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/tailguard/entrypoint.sh"]
