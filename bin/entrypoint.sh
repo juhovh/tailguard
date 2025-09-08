@@ -63,6 +63,7 @@ iptables -P INPUT DROP
 # Create a chain for TailGuard input, dropping incoming connections
 iptables -N tg-input
 iptables -A tg-input -i "${TS_DEVICE}" -j DROP
+iptables -A tg-input -i "${WG_DEVICE}" -j DROP
 
 # Create a chain for TailGuard forward, drop external destinations
 iptables -P FORWARD DROP
@@ -83,6 +84,7 @@ ip6tables -P INPUT DROP
 # Create a chain for TailGuard input, dropping incoming connections
 ip6tables -N tg-input
 ip6tables -A tg-input -i "${TS_DEVICE}" -j DROP
+ip6tables -A tg-input -i "${WG_DEVICE}" -j DROP
 
 # Create a chain for TailGuard forward, drop external destinations
 ip6tables -P FORWARD DROP
