@@ -104,7 +104,7 @@ echo "******************************"
 
 # See https://tailscale.com/kb/1282/docker for supported parameters
 export TS_ACCEPT_DNS="false"
-export TS_AUTH_ONCE="true"
+export TS_AUTH_ONCE="false"
 # skip TS_AUTHKEY, handled earlier
 # skip TS_DEST_IP, allow passthrough
 export -n TS_HEALTHCHECK_ADDR_PORT

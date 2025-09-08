@@ -52,7 +52,7 @@ while read -r line || [[ -n $line ]]; do
 done < "$CONFIG_FILE"
 process_peer
 
-TS_EXTRA_ARGS="--accept-routes"
+TS_EXTRA_ARGS="--reset --accept-routes"
 if [ $DEFAULT_FOUND -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
-if [ -n "$SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=\"$SUBNETS_FOUND\""; fi
+if [ -n "$SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=$SUBNETS_FOUND"; fi
 echo "$TS_EXTRA_ARGS"
