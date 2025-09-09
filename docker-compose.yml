@@ -1,6 +1,6 @@
 services:
   tailguard:
-    image: tailguard:latest
+    image: juhovh/tailguard:latest
     build: .
     volumes:
       - ./config:/etc/wireguard
