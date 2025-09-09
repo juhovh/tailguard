@@ -118,11 +118,11 @@ Unlike Tailscale, WireGuard itself does not handle any routing. Therefore, the
 WireGuard subnets and routes are automatically advertised on the Tailscale
 network, but it doesn't work the other way around.
 
-Let's say your TailGuard node has an IP addresses `10.1.0.2` and
-`fd00:ed7c:a960:6e9b::2` for the WireGuard tunnel. You likely want to add at
-least routes `100.64.0.0/10` and `fd7a:115c:a1e0::/48` (Tailscale private
-address spaces) to be routed through `10.5.5.2`. You can do this with something
-along the lines of:
+Let's say your TailGuard node has IP addresses `10.1.0.2` and
+`fd00:ed7c:a960:6e9b::2` for the WireGuard tunnel, like in the above config. You
+likely want to add at least routes `100.64.0.0/10` and `fd7a:115c:a1e0::/48`
+(Tailscale private address spaces) to be routed through `10.1.0.2`. You can do
+this with something along the lines of:
 
 ```
 ip route add 100.64.0.0/10 via 10.1.0.2 dev wgserver
