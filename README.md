@@ -36,23 +36,44 @@ this bridged approach:
   reconnect to different VPNs
 - you can have access to both your tailnet and WireGuard concurrently on your
   mobile device, which doesn't support multiple VPNs
+- you can connect your home network to your tailnet using your router, which
+  only supports WireGuard but not Tailscale
 
 ## Installation
 
 The simplest way to start TailGuard is to simply download a WireGuard client
-config and save it as `wg0.conf` under `config/`. After that you can run `docker
-compose up` and login to Tailscale through the URL shown in the logs.
+config and save it as `wg0.conf`. After that you can create an IPv6 network
+(optional, but recommended) and start the container:
+
+```
+docker network create --ipv6 ip6net
+docker run -it \
+  -v ./wg0.conf:/etc/wireguard/wg0.conf -v ./state:/tailguard/state \
+  --cap-add NET_ADMIN --device /dev/net/tun \
+  --sysctl net.ipv4.ip_forward=1 --sysctl net.ipv6.conf.all.forwarding=1 \
+  --sysctl net.ipv4.conf.all.src_valid_mark=1 \
+  --network ip6net -p 41641:41641/udp \
+  --name tailguard juhovh/tailguard:latest
+```
+
+Docker will print you an URL where you need to log in to your tailnet, and after
+that you should be good to go.
+
+If you want to build the latest version of the image yourself, it might be best
+to use `docker compose`. In that case you should store the `wg0.conf` file under
+`config/`, build the latest image with `docker compose build` and finally run it
+with `docker compose up`.
 
 That's it, happy networking!
 
 ### Advanced settings
 
-Let's imagine you have a WireGuard server running on 192.168.8.1 that is able
-to accept any routes, and its local LAN network is 192.168.8.0/24. You have
-already downloaded the WireGuard client config for this tunnel and saved it as
-`wg0.conf` under `config/`. Make sure that the subnet 192.168.8.0/24 is
-explicitly mentioned in the AllowedIPs section in addition to 0.0.0.0/0, for
-TailGuard to pick it up. It should look something like this:
+Let's imagine you have a WireGuard server running on 10.1.0.1 that is able to
+accept any routes, and its local LAN network is 192.168.8.0/24. You have already
+downloaded the WireGuard client config for this tunnel and saved it.  Make sure
+that the subnet 192.168.8.0/24 is explicitly mentioned in the AllowedIPs section
+in addition to 0.0.0.0/0, for TailGuard to pick it up. It should look something
+like this:
 
 ```
 [Interface]
@@ -69,11 +90,12 @@ Endpoint = <REDACTED>:51820
 PersistentKeepalive = 25
 ```
 
-Next you can open docker-compose.yml and modify it as follows:
+Next you can either add `-e TS_DEST_IP=10.1.0.1` if running directly, or open
+the docker-compose.yml and modify it as follows:
 
 ```
     environment:
-      - TS_DEST_IP=192.168.8.1
+      - TS_DEST_IP=10.1.0.1
 ```
 
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
