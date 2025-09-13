@@ -108,6 +108,7 @@ Supported configuration parameters through environment:
 - `WG_DEVICE` - WireGuard device name, must be valid and match config file name (**default:** wg0)
 - `TS_DEVICE` - Tailscale device name, must be a valid device name (**default:** tailscale0)
 - `TS_PORT` - Tailscale port number, should be exposed by Docker (**default:** 41641)
+- `TS_LOGIN_SERVER` - URL of the control server if using Headscale
 - `TS_AUTHKEY` - Tailscale auth key for authentication if used
 - `TS_DEST_IP` - Destination IP to route Tailscale traffic to
 - `TS_HOSTNAME` - Tailscale hostname for this device if used
