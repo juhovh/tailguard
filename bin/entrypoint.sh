@@ -61,7 +61,7 @@ echo "******************************"
 # Drop all incoming packets by default, unless localhost or required
 iptables -A INPUT -i lo -j ACCEPT
 if [ -n "${PORTS_FOUND}" ]; then
-  # Allow incoming connections on WireGuard ListenPort if defined
+  echo "Allow incoming WireGuard connections on IPv4 ports: ${PORTS_FOUND}"
   iptables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
 fi
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
@@ -88,7 +88,7 @@ iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
 if [ -n "${PORTS_FOUND}" ]; then
-  # Allow incoming connections on WireGuard ListenPort if defined
+  echo "Allow incoming WireGuard connections on IPv6 ports: ${PORTS_FOUND}"
   ip6tables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
 fi
 ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
