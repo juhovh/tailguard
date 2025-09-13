@@ -68,6 +68,6 @@ done < "$CONFIG_FILE"
 process_section
 
 
-[[ -n PORTS_FOUND ]] && echo "PORTS_FOUND=\"$PORTS_FOUND\""
-[[ $DEFAULT_ROUTES_FOUND -eq 1 ]] && echo "DEFAULT_ROUTES_FOUND=1"
-[[ -n SUBNETS_FOUND ]] && echo "SUBNETS_FOUND=\"$SUBNETS_FOUND\""
+[[ -n PORTS_FOUND ]] && echo "WG_PORTS_FOUND=\"$PORTS_FOUND\""
+[[ $DEFAULT_ROUTES_FOUND -eq 1 ]] && echo "WG_DEFAULT_ROUTES_FOUND=1"
+[[ -n SUBNETS_FOUND ]] && echo "WG_SUBNETS_FOUND=\"$SUBNETS_FOUND\""

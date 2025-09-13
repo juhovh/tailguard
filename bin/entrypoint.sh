@@ -51,7 +51,7 @@ ip route add $(ip route show default | sed -e 's/default/1.0.0.1/')
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
-# Parse PORTS_FOUND, DEFAULT_ROUTES_FOUND, SUBNETS_FOUND variables
+# Parse WG_PORTS_FOUND, WG_DEFAULT_ROUTES_FOUND, and WG_SUBNETS_FOUND variables
 eval $(/tailguard/parse-wgconf.sh "${WG_DEVICE}")
 
 echo "******************************"
@@ -60,9 +60,9 @@ echo "******************************"
 
 # Drop all incoming packets by default, unless localhost or required
 iptables -A INPUT -i lo -j ACCEPT
-if [ -n "${PORTS_FOUND}" ]; then
-  echo "Allow incoming WireGuard connections on IPv4 ports: ${PORTS_FOUND}"
-  iptables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
+if [ -n "${WG_PORTS_FOUND}" ]; then
+  echo "Allow incoming WireGuard connections on IPv4 ports: ${WG_PORTS_FOUND}"
+  iptables -A INPUT -p udp --match multiport --dport "${WG_PORTS_FOUND}" -j ACCEPT
 fi
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -P INPUT DROP
@@ -87,9 +87,9 @@ iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 # Drop all incoming packets by default, unless localhost or required
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
-if [ -n "${PORTS_FOUND}" ]; then
-  echo "Allow incoming WireGuard connections on IPv6 ports: ${PORTS_FOUND}"
-  ip6tables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
+if [ -n "${WG_PORTS_FOUND}" ]; then
+  echo "Allow incoming WireGuard connections on IPv6 ports: ${WG_PORTS_FOUND}"
+  ip6tables -A INPUT -p udp --match multiport --dport "${WG_PORTS_FOUND}" -j ACCEPT
 fi
 ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -P INPUT DROP
@@ -137,11 +137,11 @@ export TS_STATE_DIR="/tailguard/state"
 export TS_USERSPACE="false"
 
 export TS_NETMON_IGNORE="${WG_DEVICE}"
-TS_EXTRA_ARGS="--reset --accept-routes"
-if [ $DEFAULT_ROUTES_FOUND -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
-if [ -n "$SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=$SUBNETS_FOUND"; fi
-export TS_EXTRA_ARGS
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
+TS_EXTRA_ARGS="--reset --accept-routes"
+if [ $WG_DEFAULT_ROUTES_FOUND -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
+if [ -n "$WG_SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=$WG_SUBNETS_FOUND"; fi
+export TS_EXTRA_ARGS
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
 echo "Starting tailscale with args: ${TS_EXTRA_ARGS}"
