@@ -139,7 +139,7 @@ export TS_USERSPACE="false"
 export TS_NETMON_IGNORE="${WG_DEVICE}"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
-if [ $WG_DEFAULT_ROUTES_FOUND -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
+if [ ${WG_DEFAULT_ROUTES_FOUND:-0} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 if [ -n "$WG_SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=$WG_SUBNETS_FOUND"; fi
 export TS_EXTRA_ARGS
 
