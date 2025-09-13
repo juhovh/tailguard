@@ -51,12 +51,19 @@ ip route add $(ip route show default | sed -e 's/default/1.0.0.1/')
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
+# Parse PORTS_FOUND, DEFAULT_ROUTES_FOUND, SUBNETS_FOUND variables
+eval $(/tailguard/parse-wgconf.sh "${WG_DEVICE}")
+
 echo "******************************"
 echo "** Setup TailGuard firewall **"
 echo "******************************"
 
 # Drop all incoming packets by default, unless localhost or required
 iptables -A INPUT -i lo -j ACCEPT
+if [ -n "${PORTS_FOUND}" ]; then
+  echo "Allow incoming WireGuard connections on IPv4 ports: ${PORTS_FOUND}"
+  iptables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
+fi
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -P INPUT DROP
 
@@ -69,6 +76,7 @@ iptables -A tg-input -i "${TS_DEVICE}" -j DROP
 # Create a chain for TailGuard forward, drop external destinations
 iptables -P FORWARD DROP
 iptables -N tg-forward
+iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 
@@ -79,6 +87,10 @@ iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 # Drop all incoming packets by default, unless localhost or required
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+if [ -n "${PORTS_FOUND}" ]; then
+  echo "Allow incoming WireGuard connections on IPv6 ports: ${PORTS_FOUND}"
+  ip6tables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
+fi
 ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -P INPUT DROP
 
@@ -91,6 +103,7 @@ ip6tables -A tg-input -i "${TS_DEVICE}" -j DROP
 # Create a chain for TailGuard forward, drop external destinations
 ip6tables -P FORWARD DROP
 ip6tables -N tg-forward
+ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 
@@ -124,7 +137,10 @@ export TS_STATE_DIR="/tailguard/state"
 export TS_USERSPACE="false"
 
 export TS_NETMON_IGNORE="${WG_DEVICE}"
-export TS_EXTRA_ARGS="$(/tailguard/tailscale-args.sh "${WG_DEVICE}")"
+TS_EXTRA_ARGS="--reset --accept-routes"
+if [ $DEFAULT_ROUTES_FOUND -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
+if [ -n "$SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=$SUBNETS_FOUND"; fi
+export TS_EXTRA_ARGS
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
