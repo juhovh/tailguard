@@ -51,12 +51,19 @@ ip route add $(ip route show default | sed -e 's/default/1.0.0.1/')
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
+# Parse PORTS_FOUND, DEFAULT_ROUTES_FOUND, SUBNETS_FOUND variables
+eval $(/tailguard/parse-wgconf.sh "${WG_DEVICE}")
+
 echo "******************************"
 echo "** Setup TailGuard firewall **"
 echo "******************************"
 
 # Drop all incoming packets by default, unless localhost or required
 iptables -A INPUT -i lo -j ACCEPT
+if [ -n "${PORTS_FOUND}" ]; then
+  # Allow incoming connections on WireGuard ListenPort if defined
+  iptables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
+fi
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -P INPUT DROP
 
@@ -80,6 +87,10 @@ iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 # Drop all incoming packets by default, unless localhost or required
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+if [ -n "${PORTS_FOUND}" ]; then
+  # Allow incoming connections on WireGuard ListenPort if defined
+  ip6tables -A INPUT -p udp --match multiport --dport "${PORTS_FOUND}" -j ACCEPT
+fi
 ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -P INPUT DROP
 
@@ -126,7 +137,10 @@ export TS_STATE_DIR="/tailguard/state"
 export TS_USERSPACE="false"
 
 export TS_NETMON_IGNORE="${WG_DEVICE}"
-export TS_EXTRA_ARGS="$(/tailguard/tailscale-args.sh "${WG_DEVICE}")"
+TS_EXTRA_ARGS="--reset --accept-routes"
+if [ $DEFAULT_ROUTES_FOUND -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
+if [ -n "$SUBNETS_FOUND" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=$SUBNETS_FOUND"; fi
+export TS_EXTRA_ARGS
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
