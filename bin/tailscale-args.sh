@@ -21,7 +21,7 @@ SUBNETS_FOUND=""
 
 process_peer() {
 	[[ $PEER_SECTION -ne 1 || -z $ALLOWED_IPS ]] && return 0
-	for ip in ${ALLOWED_IPS//,/}; do
+	for ip in $(echo "${ALLOWED_IPS}" | tr "," "\n"); do
 		eval "$(ipcalc -n -p "$ip")"; subnet="$NETWORK/$PREFIX"
 		if [ "$subnet" = "0.0.0.0/0" ]; then DEFAULT_FOUND=1; continue; fi
 		if [ "$subnet" = "::/0" ]; then DEFAULT_FOUND=1; continue; fi
