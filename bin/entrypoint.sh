@@ -70,6 +70,10 @@ iptables -P INPUT DROP
 # Create a chain for TailGuard input, dropping incoming connections
 # This is only for TS_DEVICE, which Tailscale accepts by default
 iptables -N tg-input
+if [ $TG_EXPOSE_HOST -eq 1 ]; then
+  iptables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
+  iptables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
+fi
 iptables -A tg-input -i "${TS_DEVICE}" -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A tg-input -i "${TS_DEVICE}" -j DROP
 
@@ -97,6 +101,10 @@ ip6tables -P INPUT DROP
 # Create a chain for TailGuard input, dropping incoming connections
 # This is only for TS_DEVICE, which Tailscale accepts by default
 ip6tables -N tg-input
+if [ $TG_EXPOSE_HOST -eq 1 ]; then
+  ip6tables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
+  ip6tables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
+fi
 ip6tables -A tg-input -i "${TS_DEVICE}" -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A tg-input -i "${TS_DEVICE}" -j DROP
 
