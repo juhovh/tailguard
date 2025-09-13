@@ -69,6 +69,7 @@ iptables -A tg-input -i "${TS_DEVICE}" -j DROP
 # Create a chain for TailGuard forward, drop external destinations
 iptables -P FORWARD DROP
 iptables -N tg-forward
+iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 
@@ -91,6 +92,7 @@ ip6tables -A tg-input -i "${TS_DEVICE}" -j DROP
 # Create a chain for TailGuard forward, drop external destinations
 ip6tables -P FORWARD DROP
 ip6tables -N tg-forward
+ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 
