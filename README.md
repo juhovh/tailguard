@@ -85,7 +85,7 @@ MTU = 1420
 [Peer]
 PublicKey = <REDACTED>
 PresharedKey = <REDACTED>
-AllowedIPs = 0.0.0.0/0, ::/0, 192.168.8.0/24
+AllowedIPs = 0.0.0.0/0,::/0,192.168.8.0/24
 Endpoint = <REDACTED>:51820
 PersistentKeepalive = 25
 ```
@@ -111,8 +111,9 @@ Supported configuration parameters through environment:
 - `TS_PORT` - Tailscale port number, should be exposed by Docker (**default:** 41641)
 - `TS_LOGIN_SERVER` - URL of the control server if using Headscale
 - `TS_AUTHKEY` - Tailscale auth key for authentication if used
-- `TS_DEST_IP` - Destination IP to route Tailscale traffic to
 - `TS_HOSTNAME` - Tailscale hostname for this device if used
+- `TS_DEST_IP` - Destination IP to route Tailscale traffic to
+- `TS_ROUTES` - Override autodetected routes to advertise if needed
 
 ### Two-way routing between the networks
 

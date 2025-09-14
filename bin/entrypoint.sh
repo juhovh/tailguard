@@ -129,6 +129,13 @@ echo "******************************"
 echo "** Start Tailscale daemon   **"
 echo "******************************"
 
+# Set advertised routes to either user specified or autodetected ones
+if [ -n "${TS_ROUTES}" ]; then
+  ADVERTISE_ROUTES="${TS_ROUTES}"
+else
+  ADVERTISE_ROUTES="${WG_SUBNETS_FOUND}"
+fi
+
 # See https://tailscale.com/kb/1282/docker for supported parameters
 export TS_ACCEPT_DNS="false"
 export TS_AUTH_ONCE="false"
@@ -153,7 +160,7 @@ export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
 if [ ${WG_DEFAULT_ROUTES_FOUND:-0} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
-if [ -n "${WG_SUBNETS_FOUND}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=${WG_SUBNETS_FOUND}"; fi
+if [ -n "${ADVERTISE_ROUTES}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=${ADVERTISE_ROUTES}"; fi
 export TS_EXTRA_ARGS
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
