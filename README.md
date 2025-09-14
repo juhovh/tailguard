@@ -105,6 +105,7 @@ hosts, advertise itself as an exit node, and authenticate with the given
 authkey.
 
 Supported configuration parameters through environment:
+- `TG_EXPOSE_HOST` - Set to 1 if you want to allow connections from TS and WG hosts
 - `WG_DEVICE` - WireGuard device name, must be valid and match config file name (**default:** wg0)
 - `TS_DEVICE` - Tailscale device name, must be a valid device name (**default:** tailscale0)
 - `TS_PORT` - Tailscale port number, should be exposed by Docker (**default:** 41641)
