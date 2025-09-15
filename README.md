@@ -1,8 +1,8 @@
 # TailGuard
 
-A simple Docker container app which allows connecting existing WireGuard
-servers to the Tailscale network, in case the device running WireGuard is
-locked in and/or does not support Tailscale binaries.
+A simple Docker container app which allows connecting existing WireGuard hosts
+to the Tailscale network, in case the device running WireGuard is locked in
+and/or does not support Tailscale binaries.
 
 The network topology will look roughly like this:
 ```
@@ -20,7 +20,7 @@ The network topology will look roughly like this:
 As usual, the tailnet is virtual and in reality connections are point-to-point,
 but all connections to WireGuard are tunneled through the TailGuard server with
 a fixed and persistent connection. As long as you have access to a server as
-close to the WireGuard server as possible (ideally with a minimal ping), for
+close to the WireGuard host as possible (ideally with a minimal ping), for
 example a VPS, you can connect any WireGuard device to your tailnet.
 
 ## Benefits
@@ -41,9 +41,9 @@ this bridged approach:
 
 ## Installation
 
-The simplest way to start TailGuard is to simply download a WireGuard client
-config and save it as `wg0.conf`. After that you can create an IPv6 network
-(optional, but recommended) and start the container:
+The simplest way to start TailGuard is to simply download a WireGuard config and
+save it as `wg0.conf`. After that you can create an IPv6 network (optional, but
+recommended) and start the container:
 
 ```
 docker network create --ipv6 ip6net
@@ -70,7 +70,7 @@ That's it, happy networking!
 
 Let's imagine you have a WireGuard server running on 10.1.0.1 that is able to
 accept any routes, and its local LAN network is 192.168.8.0/24. You have already
-downloaded the WireGuard client config for this tunnel and saved it.  Make sure
+downloaded the WireGuard client config for this tunnel and saved it. Make sure
 that the subnet 192.168.8.0/24 is explicitly mentioned in the AllowedIPs section
 in addition to 0.0.0.0/0, for TailGuard to pick it up. It should look something
 like this:
@@ -109,11 +109,15 @@ Supported configuration parameters through environment:
 - `WG_DEVICE` - WireGuard device name, must be valid and match config file name (**default:** wg0)
 - `TS_DEVICE` - Tailscale device name, must be a valid device name (**default:** tailscale0)
 - `TS_PORT` - Tailscale port number, should be exposed by Docker (**default:** 41641)
-- `TS_LOGIN_SERVER` - URL of the control server if using Headscale
+- `TS_LOGIN_SERVER` - URL of the control server if not provided by Tailscale
 - `TS_AUTHKEY` - Tailscale auth key for authentication if used
 - `TS_HOSTNAME` - Tailscale hostname for this device if used
 - `TS_DEST_IP` - Destination IP to route Tailscale traffic to
 - `TS_ROUTES` - Override autodetected routes to advertise if needed
+
+Some of these parameteres follow the naming of Tailscale Docker image
+[parameters](https://tailscale.com/kb/1282/docker), in which case they should
+also work the same way.
 
 ### Two-way routing between the networks
 
@@ -124,8 +128,20 @@ network, but it doesn't work the other way around.
 Let's say your TailGuard node has IP addresses `10.1.0.2` and
 `fd00:ed7c:a960:6e9b::2` for the WireGuard tunnel, like in the above config. You
 likely want to add at least routes `100.64.0.0/10` and `fd7a:115c:a1e0::/48`
-(Tailscale private address spaces) to be routed through `10.1.0.2`. You can do
-this with something along the lines of:
+(Tailscale private address spaces) to be routed through `10.1.0.2`.
+
+The easiest way is to modify the AllowedIPs section to include the Tailscale
+network segments an any other subnets you'd like to route through TailGuard:
+
+```
+[Peer]
+PublicKey = <REDACTED>
+PresharedKey = <REDACTED>
+AllowedIPs = 10.1.0.2/32,fd00:ed7c:a960:6e9b::2/128,100.64.0.0/10,fd7a:115c:a1e0::/48
+```
+
+If your router doesn't allow modifying the WireGuard configuration, you could
+use its routing UI or the console to do something along the lines of:
 
 ```
 ip route add 100.64.0.0/10 via 10.1.0.2 dev wgserver
