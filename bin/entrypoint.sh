@@ -130,10 +130,10 @@ echo "** Start Tailscale daemon   **"
 echo "******************************"
 
 # Set advertised routes to either user specified or autodetected ones
-if [ -n "${TS_ROUTES}" ]; then
-  ADVERTISE_ROUTES="${TS_ROUTES}"
-else
+if [ -z "${TS_ROUTES+set}" ]; then
   ADVERTISE_ROUTES="${WG_SUBNETS_FOUND}"
+else
+  ADVERTISE_ROUTES="${TS_ROUTES}"
 fi
 
 # See https://tailscale.com/kb/1282/docker for supported parameters
