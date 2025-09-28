@@ -1,6 +1,6 @@
 FROM golang:1.25.1-alpine AS build-env
 
-ARG TS_VERSION="v1.88.2"
+ARG TS_VERSION="v1.88.3"
 
 WORKDIR /go/src/tailscale
 
