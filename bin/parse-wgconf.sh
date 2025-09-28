@@ -4,8 +4,10 @@
 # Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
 # Copyright (C) 2025 Juho Vähä-Herttua <juhovh@iki.fi>. All Rights Reserved.
 
-# Checks if WireGuard config has a default route, adds --advertise-exit-node if yes
-# Parses all subnets from AllowedIPs and adds --advertise-routes= with them if found
+# Parses the WireGuard config and prints values that can be used as env variables:
+# WG_PORTS_FOUND - a comma separated list of listened UDP ports, if any
+# WG_DEFAULT_ROUTES_FOUND - set as 1 if there's at least one default route found
+# WG_SUBNETS_FOUND - a comma separated list of allowed subnets found, if any
 
 set -e
 shopt -s nocasematch
