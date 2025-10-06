@@ -31,8 +31,8 @@ process_section() {
 		for ip in $(echo "${ALLOWED_IPS}" | tr "," "\n"); do
 			eval "$(ipcalc -n -p "$ip")"; subnet="$NETWORK/$PREFIX"
 			if [[ "$subnet" = "0.0.0.0/0" || "$subnet" = "::/0" ]]; then
-				DEFAULT_ROUTES_FOUND=1;
-				continue;
+				DEFAULT_ROUTES_FOUND=1
+				continue
 			fi
 			[[ -n $SUBNETS_FOUND ]] && SUBNETS_FOUND="$SUBNETS_FOUND,"
 			SUBNETS_FOUND="$SUBNETS_FOUND$subnet"
