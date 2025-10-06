@@ -44,6 +44,11 @@ else
   TG_EXPOSE_HOST=0
 fi
 
+if [ -z "${TG_NAMESERVERS+set}" ]; then
+  echo "Environment variable \$TS_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
+  TG_NAMESERVERS="1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001"
+fi
+
 # Create wireguard device and set it up
 echo "******************************"
 echo "** Start WireGuard device   **"
@@ -52,9 +57,22 @@ echo "Device name: ${WG_DEVICE}"
 /usr/bin/wg-quick up "${WG_DEVICE}"
 
 # Setup backup DNS, crontab to include reresolve-dns.sh script, run cron
-ip route add $(ip route show default | sed -e 's/default/1.1.1.1/')
-ip route add $(ip route show default | sed -e 's/default/1.0.0.1/')
-(resolvconf -l "${WG_DEVICE}" 2>/dev/null; echo -e "nameserver 1.1.1.1\nnameserver 1.0.0.1") | resolvconf -a "${WG_DEVICE}"
+for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
+  if ! ipcalc -s -c "$nameserver"; then
+    echo "Found an invalid nameserver \"$nameserver\", skipping..."
+    continue
+  elif [ -n "$(ip -4 route show default)" ] && ipcalc -s -c -4 "$nameserver"; then
+    echo "Adding a fallback IPv4 nameserver \"$nameserver\""
+    ip route add $(ip -4 route show default | sed -e "s/default/$nameserver/")
+  elif [ -n "$(ip -6 route show default)" ] && ipcalc -s -c -6 "$nameserver"; then
+    echo "Adding a fallback IPv6 nameserver \"$nameserver\""
+    ip route add $(ip -6 route show default | sed -e "s/default/$nameserver/")
+  else
+    # No default route for the given address family, skip adding the nameserver
+    continue
+  fi
+  (resolvconf -l "${WG_DEVICE}" 2>/dev/null; echo "nameserver $nameserver") | resolvconf -a "${WG_DEVICE}"
+done
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
