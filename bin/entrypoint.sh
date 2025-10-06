@@ -46,7 +46,7 @@ fi
 
 if [ -z "${TG_NAMESERVERS+set}" ]; then
   echo "Environment variable \$TS_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
-  TG_NAMESERVERS="1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001"
+  TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
 fi
 
 # Create wireguard device and set it up
