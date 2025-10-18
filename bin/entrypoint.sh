@@ -180,7 +180,7 @@ export TS_USERSPACE="false"
 
 export TS_NETMON_IGNORE="${WG_DEVICE}"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
-TS_EXTRA_ARGS="--reset --accept-dns=false --accept-routes"
+TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
 if [ ${WG_DEFAULT_ROUTES_FOUND:-0} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 if [ -n "${ADVERTISE_ROUTES}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=${ADVERTISE_ROUTES}"; fi
