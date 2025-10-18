@@ -37,6 +37,13 @@ if [ -n "${TS_AUTHKEY}" ]; then
   fi
 fi
 
+if [ ${TG_CLIENT_MODE:-0} -eq 1 ]; then
+  echo "Use TailGuard in a Tailscale client mode"
+else
+  # Default to not being in client mode
+  TG_CLIENT_MODE=0
+fi
+
 if [ ${TG_EXPOSE_HOST:-0} -eq 1 ]; then
   echo "Expose host to Tailscale and WireGuard networks"
 else
@@ -160,7 +167,19 @@ else
 fi
 
 # See https://tailscale.com/kb/1282/docker for supported parameters
-export TS_ACCEPT_DNS="false"
+if [ ${TG_CLIENT_MODE} -eq 1 ]; then
+  # If in client mode, enable DNS but do not allow advertising any routes
+  export TS_ACCEPT_DNS="true"
+  export -n TS_ROUTES
+  ADVERTISE_EXIT_NODE=0
+  # allow TS_EXIT_NODE
+else
+  # If not in client mode, allow advertising but do not allow exit nodes
+  export TS_ACCEPT_DNS="false"
+  export TS_ROUTES="${ADVERTISE_ROUTES}"
+  ADVERTISE_EXIT_NODE=${WG_DEFAULT_ROUTES_FOUND:-0}
+  unset TS_EXIT_NODE
+fi
 export TS_AUTH_ONCE="false"
 # skip TS_AUTHKEY, handled earlier
 # skip TS_DEST_IP, allow passthrough
@@ -171,7 +190,6 @@ export TS_ENABLE_METRICS="false"
 # skip TS_HOSTNAME, allow passthrough
 export TS_KUBE_SECRET=""
 export -n TS_OUTBOUND_HTTP_PROXY_LISTEN
-export -n TS_ROUTES
 export -n TS_SERVE_CONFIG
 export -n TS_SOCKET
 export -n TS_SOCKS5_SERVER
@@ -182,8 +200,8 @@ export TS_NETMON_IGNORE="${WG_DEVICE}"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
-if [ ${WG_DEFAULT_ROUTES_FOUND:-0} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
-if [ -n "${ADVERTISE_ROUTES}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-routes=${ADVERTISE_ROUTES}"; fi
+if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
+if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS_EXIT_NODE}"; fi
 export TS_EXTRA_ARGS
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
