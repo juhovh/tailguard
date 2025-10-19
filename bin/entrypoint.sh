@@ -162,10 +162,17 @@ WG_FWMARK=$(wg show "${WG_DEVICE}" fwmark)
 if [ "${WG_FWMARK}" = "off" ]; then
   # No fwmark set by wg-quick, use listen-port as fwmark
   WG_FWMARK=$(wg show "${WG_DEVICE}" listen-port)
-  wg set "${WG_DEVICE}" fwmark $WG_FWMARK
+  wg set "${WG_DEVICE}" fwmark ${WG_FWMARK}
 fi
-ip -4 rule add not from all fwmark $WG_FWMARK lookup 52 pref 5270
-ip -6 rule add not from all fwmark $WG_FWMARK lookup 52 pref 5270
+WG_FWMARK=$(printf "%d" ${WG_FWMARK})
+
+echo "Setting Tailscale routing rules for mark ${WG_FWMARK}"
+iptables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
+iptables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
+ip -4 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
+ip6tables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
+ip6tables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
+ip -6 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
 
 echo "All rules set up, waiting for healthcheck for finalisation"
 
@@ -215,7 +222,7 @@ export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
 if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
-if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS_EXIT_NODE}"; fi
+if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access"; fi
 export TS_EXTRA_ARGS
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
