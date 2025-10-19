@@ -1,4 +1,4 @@
-FROM golang:1.25.1-alpine AS build-env
+FROM golang:1.25.3-alpine AS build-env
 
 ARG TS_VERSION="v1.88.4"
 
@@ -24,7 +24,7 @@ RUN \
       -X 'tailscale.com/version.gitCommitStamp=$VERSION_GIT_HASH'" \
       -v ./cmd/tailscale ./cmd/tailscaled ./cmd/containerboot
 
-FROM alpine:3.22.1
+FROM alpine:3.22.2
 
 WORKDIR /tailguard
 
