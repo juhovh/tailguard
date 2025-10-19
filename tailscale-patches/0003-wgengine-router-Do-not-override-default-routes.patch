@@ -1,6 +1,6 @@
-From 24313612a75f400f05bc68f25922ed00c4c45d0c Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Juho=20V=C3=A4h=C3=A4-Herttua?= <juho@canva.com>
-Date: Sun, 19 Oct 2025 14:05:49 +1100
+From d3900136e48583bedc90ad6a934a4d664d96ec49 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Juho=20V=C3=A4h=C3=A4-Herttua?= <juhovh@iki.fi>
+Date: Mon, 20 Oct 2025 01:09:54 +1100
 Subject: [PATCH 3/3] wgengine/router: Do not override default routes
 
 Tailscale overriding the default routes can cause trouble in case
