@@ -63,6 +63,15 @@ echo "******************************"
 echo "Device name: ${WG_DEVICE}"
 /usr/bin/wg-quick up "${WG_DEVICE}"
 
+# Set fwmark for the WireGuard device, unless already set by wg-quick
+WG_FWMARK=$(wg show "${WG_DEVICE}" fwmark)
+if [ "${WG_FWMARK}" = "off" ]; then
+  # No fwmark set by wg-quick, use listen-port as fwmark
+  WG_FWMARK=$(wg show "${WG_DEVICE}" listen-port)
+  wg set "${WG_DEVICE}" fwmark ${WG_FWMARK}
+fi
+WG_FWMARK=$(printf "%d" ${WG_FWMARK})
+
 # Setup backup DNS, crontab to include reresolve-dns.sh script, run cron
 for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
   if ! ipcalc -s -c "$nameserver"; then
@@ -155,23 +164,19 @@ ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 ip6tables -t nat -N tg-postrouting
 ip6tables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 
-# Modify routing rules to include Tailscale default table, but exclude
-# WireGuard packets from it to make sure they do not end up getting
-# routed through Tailscale. Requires a patched Tailscale version.
-WG_FWMARK=$(wg show "${WG_DEVICE}" fwmark)
-if [ "${WG_FWMARK}" = "off" ]; then
-  # No fwmark set by wg-quick, use listen-port as fwmark
-  WG_FWMARK=$(wg show "${WG_DEVICE}" listen-port)
-  wg set "${WG_DEVICE}" fwmark ${WG_FWMARK}
-fi
-WG_FWMARK=$(printf "%d" ${WG_FWMARK})
+# Save WireGuard device fwmark in postrouting and restore it in prerouting
+iptables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
+iptables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
+ip6tables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
+ip6tables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
+
+# Add Tailscale routing table to the routing rules, since it's not
+# added by our patched Tailscale. This is required to prevent our
+# WireGuard packets getting routed through the exit node. The values
+# 5270 and 52 are hardcoded in the Tailscale source code.
 
 echo "Setting Tailscale routing rules for mark ${WG_FWMARK}"
-iptables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
-iptables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
 ip -4 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
-ip6tables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
-ip6tables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
 ip -6 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
 
 echo "All rules set up, waiting for healthcheck for finalisation"
