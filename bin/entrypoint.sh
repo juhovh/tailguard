@@ -153,6 +153,18 @@ ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 ip6tables -t nat -N tg-postrouting
 ip6tables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 
+# Modify routing rules to include Tailscale default table, but exclude
+# WireGuard packets from it to make sure they do not end up getting
+# routed through Tailscale. Requires a patched Tailscale version.
+WG_FWMARK=$(wg show "${WG_DEVICE}" fwmark)
+if [ "${WG_FWMARK}" = "off" ]; then
+  # No fwmark set by wg-quick, use listen-port as fwmark
+  WG_FWMARK=$(wg show "${WG_DEVICE}" listen-port)
+  wg set "${WG_DEVICE}" fwmark $WG_FWMARK
+fi
+ip -4 rule add not from all fwmark $WG_FWMARK lookup 52 pref 5270
+ip -6 rule add not from all fwmark $WG_FWMARK lookup 52 pref 5270
+
 echo "All rules set up, waiting for healthcheck for finalisation"
 
 echo "******************************"
