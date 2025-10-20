@@ -1,6 +1,25 @@
 #!/bin/sh
 set -e
 
+if [ ${TG_EXPOSE_HOST:-0} -eq 1 ]; then
+  echo "Expose host to Tailscale and WireGuard networks"
+else
+  # Default to not exposing the host
+  TG_EXPOSE_HOST=0
+fi
+
+if [ ${TG_CLIENT_MODE:-0} -eq 1 ]; then
+  echo "Using Tailscale client mode, advertisements disabled, exit node allowed"
+else
+  # Default to not being in client mode
+  TG_CLIENT_MODE=0
+fi
+
+if [ -z "${TG_NAMESERVERS+set}" ]; then
+  echo "Environment variable \$TS_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
+  TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
+fi
+
 # Check that the WireGuard device env variable is set
 if [ -z "${WG_DEVICE+set}" ]; then
   echo "Environment variable \$WG_DEVICE is not set, defaulting to wg0"
@@ -35,25 +54,6 @@ if [ -n "${TS_AUTHKEY}" ]; then
     echo "Ignoring the key and trying to authenticate without it"
     export -n TS_AUTHKEY
   fi
-fi
-
-if [ ${TG_CLIENT_MODE:-0} -eq 1 ]; then
-  echo "Use TailGuard in a Tailscale client mode"
-else
-  # Default to not being in client mode
-  TG_CLIENT_MODE=0
-fi
-
-if [ ${TG_EXPOSE_HOST:-0} -eq 1 ]; then
-  echo "Expose host to Tailscale and WireGuard networks"
-else
-  # Default to not exposing the host
-  TG_EXPOSE_HOST=0
-fi
-
-if [ -z "${TG_NAMESERVERS+set}" ]; then
-  echo "Environment variable \$TS_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
-  TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
 fi
 
 # Create wireguard device and set it up
