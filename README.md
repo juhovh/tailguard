@@ -53,7 +53,7 @@ docker run -it \
   --sysctl net.ipv4.ip_forward=1 --sysctl net.ipv6.conf.all.forwarding=1 \
   --sysctl net.ipv4.conf.all.src_valid_mark=1 \
   --network ip6net -p 41641:41641/udp \
-  --name tailguard juhovh/tailguard:latest
+  --name tailguard ghcr.io/juhovh/tailguard:latest
 ```
 
 Docker will print you an URL where you need to log in to your tailnet, and after
