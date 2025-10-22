@@ -70,14 +70,28 @@ echo "******************************"
 echo "Device name: ${WG_DEVICE}"
 /usr/bin/wg-quick up "${WG_DEVICE}"
 
+# Get required port and route information from WireGuard
+WG_LISTEN_PORT=$(wg show "${WG_DEVICE}" listen-port)
+WG_DEFAULT_ROUTES_FOUND=0
+WG_SUBNETS_FOUND=""
+
+for subnet in $(wg show "${WG_DEVICE}" allowed-ips | cut -f 2 | tr ' ' '\n'); do
+  if [[ "$subnet" = "0.0.0.0/0" || "$subnet" = "::/0" ]]; then
+    WG_DEFAULT_ROUTES_FOUND=1
+    continue
+  fi
+  [ -n "${WG_SUBNETS_FOUND}" ] && WG_SUBNETS_FOUND="${WG_SUBNETS_FOUND},"
+  WG_SUBNETS_FOUND="${WG_SUBNETS_FOUND}${subnet}"
+done
+
 # Set fwmark for the WireGuard device, unless already set by wg-quick
 WG_FWMARK=$(wg show "${WG_DEVICE}" fwmark)
 if [ "${WG_FWMARK}" = "off" ]; then
   # No fwmark set by wg-quick, use listen-port as fwmark
-  WG_FWMARK=$(wg show "${WG_DEVICE}" listen-port)
-  wg set "${WG_DEVICE}" fwmark ${WG_FWMARK}
+  WG_FWMARK="${WG_LISTEN_PORT}"
+  wg set "${WG_DEVICE}" fwmark "${WG_FWMARK}"
 fi
-WG_FWMARK=$(printf "%d" ${WG_FWMARK})
+WG_FWMARK=$(printf "%d" "${WG_FWMARK}")
 
 # Setup backup DNS, crontab to include reresolve-dns.sh script, run cron
 for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
@@ -98,20 +112,6 @@ for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
 done
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
-
-# Get required port and route information from WireGuard
-WG_LISTEN_PORT=$(wg show "${WG_DEVICE}" listen-port)
-WG_DEFAULT_ROUTES_FOUND=0
-WG_SUBNETS_FOUND=""
-
-for subnet in $(wg show "${WG_DEVICE}" allowed-ips | cut -f 2 | tr ' ' '\n'); do
-  if [[ "$subnet" = "0.0.0.0/0" || "$subnet" = "::/0" ]]; then
-    WG_DEFAULT_ROUTES_FOUND=1
-    continue
-  fi
-  [ -n "${WG_SUBNETS_FOUND}" ] && WG_SUBNETS_FOUND="${WG_SUBNETS_FOUND},"
-  WG_SUBNETS_FOUND="${WG_SUBNETS_FOUND}${subnet}"
-done
 
 echo "******************************"
 echo "** Setup TailGuard firewall **"
@@ -137,7 +137,7 @@ fi
 # Create a chain for TailGuard forward, drop external destinations
 iptables -P FORWARD DROP
 iptables -N tg-forward
-if ! [ ${WG_ISOLATE_PEERS} -eq 1 ]; then
+if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
   iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 fi
 iptables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
@@ -171,7 +171,7 @@ fi
 # Create a chain for TailGuard forward, drop external destinations
 ip6tables -P FORWARD DROP
 ip6tables -N tg-forward
-if ! [ ${WG_ISOLATE_PEERS} -eq 1 ]; then
+if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
   ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 fi
 ip6tables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
