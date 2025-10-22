@@ -6,15 +6,15 @@ and/or does not support Tailscale binaries.
 
 The network topology will look roughly like this:
 ```
-  +---------+
-  | device1 |\
-  +---------+ \                      VPS
-  +---------+  \ +---------+    +-----------+      +-----------+
-  | device2 |----| tailnet |----| TailGuard |<---->| WireGuard |
-  +---------+  / +---------+    +-----------+      +-----------+
-  +---------+ /
-  | device3 |/
-  +---------+
+  +---------+                                                       +---------+
+  | device1 |\                                                     /| device4 |
+  +---------+ \                        VPS                        / +---------+
+  +---------+  \ +-----------+    +-----------+    +-----------+ /  +---------+
+  | device2 |----| Tailscale |<-->| TailGuard |<-->| WireGuard |----| device5 |
+  +---------+  / +-----------+    +-----------+    +-----------+ \  +---------+
+  +---------+ /                                                   \ +---------+
+  | device3 |/                                                     \| device6 |
+  +---------+                                                       +---------+
 ```
 
 As usual, the tailnet is virtual and in reality connections are point-to-point,
@@ -38,6 +38,10 @@ this bridged approach:
   mobile device, which doesn't support multiple VPNs
 - you can connect your home network to your tailnet using your router, which
   only supports WireGuard but not Tailscale
+- you can have a host that is connected to both tailnet and WireGuard hosts,
+  and serving both sides equally
+- you can create a WireGuard server that allows devices that don't support
+  Tailscale to connect to the tailnet, including using tailnet exit nodes
 
 ## Installation
 
