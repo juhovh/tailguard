@@ -26,6 +26,13 @@ if [ -z "${WG_DEVICE+set}" ]; then
   export WG_DEVICE="wg0"
 fi
 
+if [ ${WG_ISOLATE_PEERS:-0} -eq 1 ]; then
+  echo "Isolating WireGuard peers from each other"
+else
+  # Default to not isolating peers
+  WG_ISOLATE_PEERS=0
+fi
+
 # Check that the config file exists and has the right permissions
 WG_CONF_PATH="/etc/wireguard/${WG_DEVICE}.conf"
 if [ ! -f "${WG_CONF_PATH}" ]; then
@@ -122,7 +129,9 @@ fi
 # Create a chain for TailGuard forward, drop external destinations
 iptables -P FORWARD DROP
 iptables -N tg-forward
-iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
+if ! [ ${WG_ISOLATE_PEERS} -eq 1 ]; then
+  iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
+fi
 iptables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
@@ -157,7 +166,9 @@ fi
 # Create a chain for TailGuard forward, drop external destinations
 ip6tables -P FORWARD DROP
 ip6tables -N tg-forward
-ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
+if ! [ ${WG_ISOLATE_PEERS} -eq 1 ]; then
+  ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
+fi
 ip6tables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
