@@ -23,7 +23,7 @@ fi
 # Check that the WireGuard device env variable is set
 if [ -z "${WG_DEVICE+set}" ]; then
   echo "Environment variable \$WG_DEVICE is not set, defaulting to wg0"
-  export WG_DEVICE="wg0"
+  WG_DEVICE="wg0"
 fi
 
 if [ ${WG_ISOLATE_PEERS:-0} -eq 1 ]; then
@@ -44,13 +44,13 @@ chmod 600 "${WG_CONF_PATH}"
 # Check that the Tailscale device env variable is set
 if [ -z "${TS_DEVICE+set}" ]; then
   echo "Environment variable \$TS_DEVICE is not set, defaulting to tailscale0"
-  export TS_DEVICE="tailscale0"
+  TS_DEVICE="tailscale0"
 fi
 
 # Check that the Tailscale port env variable is set
 if [ -z "${TS_PORT+set}" ]; then
   echo "Environment variable \$TS_PORT is not set, defaulting to 41641"
-  export TS_PORT="41641"
+  TS_PORT="41641"
 fi
 
 if [ -n "${TS_AUTHKEY}" ]; then
