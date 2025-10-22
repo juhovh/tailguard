@@ -187,26 +187,22 @@ echo "******************************"
 echo "** Start Tailscale daemon   **"
 echo "******************************"
 
-# Set advertised routes to either user specified or autodetected ones
-if [ -z "${TS_ROUTES+set}" ]; then
-  ADVERTISE_ROUTES="${WG_SUBNETS_FOUND}"
-else
-  ADVERTISE_ROUTES="${TS_ROUTES}"
-fi
-
 # See https://tailscale.com/kb/1282/docker for supported parameters
 if [ ${TG_CLIENT_MODE} -eq 1 ]; then
   # If in client mode, enable DNS but do not allow advertising any routes
   export TS_ACCEPT_DNS="true"
-  export -n TS_ROUTES
   ADVERTISE_EXIT_NODE=0
   # allow TS_EXIT_NODE
 else
   # If not in client mode, allow advertising but do not allow exit nodes
   export TS_ACCEPT_DNS="false"
-  export TS_ROUTES="${ADVERTISE_ROUTES}"
   ADVERTISE_EXIT_NODE=${WG_DEFAULT_ROUTES_FOUND:-0}
   unset TS_EXIT_NODE
+
+  # If TS_ROUTES is not set, use routes from WireGuard configuration
+  if [ -z "${TS_ROUTES+set}" ]; then
+    export TS_ROUTES="${WG_SUBNETS_FOUND}"
+  fi
 fi
 export TS_AUTH_ONCE="false"
 # skip TS_AUTHKEY, handled earlier
@@ -218,6 +214,7 @@ export TS_ENABLE_METRICS="false"
 # skip TS_HOSTNAME, allow passthrough
 export TS_KUBE_SECRET=""
 export -n TS_OUTBOUND_HTTP_PROXY_LISTEN
+# skip TS_ROUTES, handled earlier
 export -n TS_SERVE_CONFIG
 export -n TS_SOCKET
 export -n TS_SOCKS5_SERVER

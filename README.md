@@ -115,7 +115,7 @@ Supported configuration parameters through environment:
 - `TS_AUTHKEY` - Tailscale auth key for authentication if used
 - `TS_HOSTNAME` - Tailscale hostname for this device if used
 - `TS_DEST_IP` - Destination IP to route Tailscale traffic to
-- `TS_ROUTES` - Override autodetected routes to advertise if needed, ignored in client mode
+- `TS_ROUTES` - Override autodetected routes to advertise if needed
 - `TS_EXIT_NODE` - Set Tailscale exit node, only works with client mode enabled
 
 Some of these parameteres follow the naming of Tailscale Docker image
