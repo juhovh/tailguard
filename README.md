@@ -36,8 +36,6 @@ this bridged approach:
   reconnect to different VPNs
 - you can have access to both your tailnet and WireGuard concurrently on your
   mobile device, which doesn't support multiple VPNs
-- you can connect your home network to your tailnet using your router, which
-  only supports WireGuard but not Tailscale
 - you can have a host that is connected to both tailnet and WireGuard hosts,
   and serving both sides equally
 - you can create a WireGuard server that allows devices that don't support
@@ -109,14 +107,14 @@ hosts, advertise itself as an exit node, and authenticate with the given
 authkey.
 
 Supported configuration parameters through environment:
-- `TG_EXPOSE_HOST` - Set to 1 if you want to allow connections from TS and WG hosts
+- `TG_EXPOSE_HOST` - Set to 1 if you want to allow connections from TS and WG peers
 - `TG_CLIENT_MODE` - Set to 1 to behave as a Tailscale client, allows setting an exit node
 - `TG_NAMESERVERS` - Fallback nameservers for resolving hostnames (**default:** Cloudflare 1.1.1.1)
 - `WG_DEVICE` - WireGuard device name, must be valid and match config file name (**default:** wg0)
 - `WG_ISOLATE_PEERS` - Set to 1 to isolate WireGuard peers from each other
 - `TS_DEVICE` - Tailscale device name, must be a valid device name (**default:** tailscale0)
 - `TS_PORT` - Tailscale port number, should be exposed by Docker (**default:** 41641)
-- `TS_LOGIN_SERVER` - URL of the control server if not provided by Tailscale
+- `TS_LOGIN_SERVER` - URL of the control server if not using Tailscale default
 - `TS_AUTHKEY` - Tailscale auth key for authentication if used
 - `TS_HOSTNAME` - Tailscale hostname for this device if used
 - `TS_DEST_IP` - Destination IP to route Tailscale traffic to
