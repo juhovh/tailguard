@@ -138,7 +138,7 @@ likely want to add at least routes `100.64.0.0/10` and `fd7a:115c:a1e0::/48`
 (Tailscale private address spaces) to be routed through `10.1.0.2`.
 
 The easiest way is to modify the AllowedIPs section to include the Tailscale
-network segments an any other subnets you'd like to route through TailGuard:
+network segments and any other subnets you'd like to route through TailGuard:
 
 ```
 [Peer]
