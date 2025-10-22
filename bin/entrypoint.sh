@@ -140,7 +140,6 @@ iptables -N tg-forward
 if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
   iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 fi
-iptables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 
@@ -174,7 +173,6 @@ ip6tables -N tg-forward
 if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
   ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 fi
-ip6tables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 
