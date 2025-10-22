@@ -99,6 +99,8 @@ done
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
+WG_LISTEN_PORT=$(wg show "${WG_DEVICE}" listen-port)
+
 # Parse WG_PORTS_FOUND, WG_DEFAULT_ROUTES_FOUND, and WG_SUBNETS_FOUND variables
 eval $(/tailguard/parse-wgconf.sh "${WG_DEVICE}")
 
@@ -108,10 +110,7 @@ echo "******************************"
 
 # Drop all incoming packets by default, unless localhost or required
 iptables -A INPUT -i lo -j ACCEPT
-if [ -n "${WG_PORTS_FOUND}" ]; then
-  echo "Allow incoming WireGuard connections on IPv4 ports: ${WG_PORTS_FOUND}"
-  iptables -A INPUT -p udp --match multiport --dport "${WG_PORTS_FOUND}" -j ACCEPT
-fi
+iptables -A INPUT -p udp --dport "${WG_LISTEN_PORT}" -j ACCEPT
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -P INPUT DROP
 
@@ -145,10 +144,7 @@ iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 # Drop all incoming packets by default, unless localhost or required
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
-if [ -n "${WG_PORTS_FOUND}" ]; then
-  echo "Allow incoming WireGuard connections on IPv6 ports: ${WG_PORTS_FOUND}"
-  ip6tables -A INPUT -p udp --match multiport --dport "${WG_PORTS_FOUND}" -j ACCEPT
-fi
+ip6tables -A INPUT -p udp --dport "${WG_LISTEN_PORT}" -j ACCEPT
 ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -P INPUT DROP
 
