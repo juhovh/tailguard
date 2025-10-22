@@ -99,10 +99,19 @@ done
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
+# Get required port and route information from WireGuard
 WG_LISTEN_PORT=$(wg show "${WG_DEVICE}" listen-port)
+WG_DEFAULT_ROUTES_FOUND=0
+WG_SUBNETS_FOUND=""
 
-# Parse WG_PORTS_FOUND, WG_DEFAULT_ROUTES_FOUND, and WG_SUBNETS_FOUND variables
-eval $(/tailguard/parse-wgconf.sh "${WG_DEVICE}")
+for subnet in $(wg show "${WG_DEVICE}" allowed-ips | cut -f 2 | tr ' ' '\n'); do
+  if [[ "$subnet" = "0.0.0.0/0" || "$subnet" = "::/0" ]]; then
+    WG_DEFAULT_ROUTES_FOUND=1
+    continue
+  fi
+  [ -n "${WG_SUBNETS_FOUND}" ] && WG_SUBNETS_FOUND="${WG_SUBNETS_FOUND},"
+  WG_SUBNETS_FOUND="${WG_SUBNETS_FOUND}${subnet}"
+done
 
 echo "******************************"
 echo "** Setup TailGuard firewall **"
