@@ -109,12 +109,12 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -P INPUT DROP
 
 # Create a chain for TailGuard input, dropping incoming connections
-# This is only for TS_DEVICE, which Tailscale accepts by default
 iptables -N tg-input
 if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
-  iptables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
   iptables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
+  iptables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
 else
+  # This is only for TS_DEVICE, which Tailscale accepts by default
   iptables -A tg-input -i "${TS_DEVICE}" -m state --state ESTABLISHED,RELATED -j ACCEPT
   iptables -A tg-input -i "${TS_DEVICE}" -j DROP
 fi
@@ -124,10 +124,12 @@ iptables -P FORWARD DROP
 iptables -N tg-forward
 iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 iptables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
-iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
+iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 
-# Create a chain for TailGuard postrouting, masquerade packets
+# Create a chain for TailGuard postrouting, masquerade packets. The
+# Tailscale rules already set masquerade for Tailscale originating
+# packets, so only WireGuard originating packets need the rule.
 iptables -t nat -N tg-postrouting
 iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
 
@@ -142,12 +144,12 @@ ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ip6tables -P INPUT DROP
 
 # Create a chain for TailGuard input, dropping incoming connections
-# This is only for TS_DEVICE, which Tailscale accepts by default
 ip6tables -N tg-input
 if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
-  ip6tables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
   ip6tables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
+  ip6tables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
 else
+  # This is only for TS_DEVICE, which Tailscale accepts by default
   ip6tables -A tg-input -i "${TS_DEVICE}" -m state --state ESTABLISHED,RELATED -j ACCEPT
   ip6tables -A tg-input -i "${TS_DEVICE}" -j DROP
 fi
@@ -157,8 +159,8 @@ ip6tables -P FORWARD DROP
 ip6tables -N tg-forward
 ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 ip6tables -A tg-forward -i "${TS_DEVICE}" -o "${TS_DEVICE}" -j ACCEPT
-ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
+ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
 
 # Create a chain for TailGuard postrouting, masquerade packets
 ip6tables -t nat -N tg-postrouting
@@ -226,8 +228,8 @@ export TS_NETMON_IGNORE="${WG_DEVICE}"
 export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
-if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access"; fi
+if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 export TS_EXTRA_ARGS
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
