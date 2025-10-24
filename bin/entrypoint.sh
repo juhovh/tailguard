@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Use the top 8 bits for WireGuard forwarding mark, they
+# are not used by neither Tailscale nor wg-quick scripts
+WG_FORWARD_MARK="0x1000000/0xff000000"
+
 if [ ${TG_EXPOSE_HOST:-0} -eq 1 ]; then
   echo "Expose host to Tailscale and WireGuard networks"
 else
@@ -142,12 +146,13 @@ if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
 fi
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 iptables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
+iptables -A tg-forward -i "${WG_DEVICE}" -j MARK --set-xmark "${WG_FORWARD_MARK}"
 
 # Create a chain for TailGuard postrouting, masquerade packets. The
 # Tailscale rules already set masquerade for Tailscale originating
 # packets, so only WireGuard originating packets need the rule.
 iptables -t nat -N tg-postrouting
-iptables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
+iptables -t nat -A tg-postrouting -m mark --mark "${WG_FORWARD_MARK}" -j MASQUERADE
 
 # Drop all incoming packets by default, unless localhost or required
 ip6tables -A INPUT -i lo -j ACCEPT
@@ -175,10 +180,11 @@ if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
 fi
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
 ip6tables -A tg-forward -i "${TS_DEVICE}" ! -o "${WG_DEVICE}" -j DROP
+ip6tables -A tg-forward -i "${WG_DEVICE}" -j MARK --set-xmark "${WG_FORWARD_MARK}"
 
 # Create a chain for TailGuard postrouting, masquerade packets
 ip6tables -t nat -N tg-postrouting
-ip6tables -t nat -A tg-postrouting -o "${TS_DEVICE}" -j MASQUERADE
+ip6tables -t nat -A tg-postrouting -m mark --mark "${WG_FORWARD_MARK}" -j MASQUERADE
 
 # Save WireGuard device fwmark in postrouting and restore it in prerouting
 iptables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
