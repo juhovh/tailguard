@@ -13,12 +13,12 @@ update_firewall() {
   fi
 }
 
-iptables="iptables" CHAIN="INPUT" chain="input"; update_firewall
-iptables="iptables" CHAIN="FORWARD" chain="forward"; update_firewall
-iptables="iptables -t nat" CHAIN="POSTROUTING" chain="postrouting"; update_firewall
-iptables="ip6tables" CHAIN="INPUT" chain="input"; update_firewall
-iptables="ip6tables" CHAIN="FORWARD" chain="forward"; update_firewall
-iptables="ip6tables -t nat" CHAIN="POSTROUTING" chain="postrouting"; update_firewall
+iptables="iptables" CHAIN="INPUT" chain="input" update_firewall
+iptables="iptables" CHAIN="FORWARD" chain="forward" update_firewall
+iptables="iptables -t nat" CHAIN="POSTROUTING" chain="postrouting" update_firewall
+iptables="ip6tables" CHAIN="INPUT" chain="input" update_firewall
+iptables="ip6tables" CHAIN="FORWARD" chain="forward" update_firewall
+iptables="ip6tables -t nat" CHAIN="POSTROUTING" chain="postrouting" update_firewall
 
 # Check Tailscale health using the health check endpoint
 HEALTHZ_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:9002/healthz")"
