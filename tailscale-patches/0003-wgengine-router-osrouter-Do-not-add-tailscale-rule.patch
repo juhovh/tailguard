@@ -1,20 +1,20 @@
-From d3900136e48583bedc90ad6a934a4d664d96ec49 Mon Sep 17 00:00:00 2001
+From 2250da93bfb6d6466e62fc719eaaa9662db4ff42 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Juho=20V=C3=A4h=C3=A4-Herttua?= <juhovh@iki.fi>
 Date: Mon, 20 Oct 2025 01:09:54 +1100
-Subject: [PATCH 3/3] wgengine/router: Do not override default routes
+Subject: [PATCH 3/3] wgengine/router/osrouter: Do not add tailscale rule
 
 Tailscale overriding the default routes can cause trouble in case
 there are other VPNs enabled in the system. Removing it gives more
 control over the routing rules.
 ---
- wgengine/router/router_linux.go | 11 +++++++----
+ wgengine/router/osrouter/router_linux.go | 11 +++++++----
  1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/wgengine/router/router_linux.go b/wgengine/router/router_linux.go
-index 2382e87cd..4509a05c0 100644
---- a/wgengine/router/router_linux.go
-+++ b/wgengine/router/router_linux.go
-@@ -1262,10 +1262,13 @@ func mustRouteTable(num int) RouteTable {
+diff --git a/wgengine/router/osrouter/router_linux.go b/wgengine/router/osrouter/router_linux.go
+index 58bd0513a..a1d9f450c 100644
+--- a/wgengine/router/osrouter/router_linux.go
++++ b/wgengine/router/osrouter/router_linux.go
+@@ -1269,10 +1269,13 @@ func mustRouteTable(num int) RouteTable {
  	// (ie. with no fwmark set), this is the first routing table, so
  	// it takes precedence over all the others, ie. VPN routes always
  	// beat non-VPN routes.

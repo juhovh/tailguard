@@ -1,4 +1,4 @@
-From 00ca6f0008bbb53888b6dfe464bea90288bd5023 Mon Sep 17 00:00:00 2001
+From 7dd3797f1341eeb1e35e9eb41be75db5fffbc687 Mon Sep 17 00:00:00 2001
 From: Cezar Craciunoiu <cezar.craciunoiu@gmail.com>
 Date: Wed, 8 Jan 2025 16:43:54 +0200
 Subject: [PATCH 1/3] net/netmon: Do not iterate over problematic interfaces
@@ -14,10 +14,10 @@ Signed-off-by: Cezar Craciunoiu <cezar.craciunoiu@unikraft.io>
  1 file changed, 3 insertions(+)
 
 diff --git a/net/netmon/state.go b/net/netmon/state.go
-index bd0960768..4f8788907 100644
+index 27e3524e8..70a613bc0 100644
 --- a/net/netmon/state.go
 +++ b/net/netmon/state.go
-@@ -203,6 +203,9 @@ func ForeachInterface(fn func(Interface, []netip.Prefix)) error {
+@@ -208,6 +208,9 @@ func ForeachInterface(fn func(Interface, []netip.Prefix)) error {
  // the interface, and Bits are the subnet mask.
  func (ifaces InterfaceList) ForeachInterface(fn func(Interface, []netip.Prefix)) error {
  	for _, iface := range ifaces {
