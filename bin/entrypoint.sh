@@ -97,7 +97,7 @@ if [ "${WG_FWMARK}" = "off" ]; then
 fi
 WG_FWMARK=$(printf "%d" "${WG_FWMARK}")
 
-# Setup backup DNS, crontab to include reresolve-dns.sh script, run cron
+# Setup backup DNS servers by adding them through resolvconf
 for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
   if ! ipcalc -s -c "$nameserver"; then
     echo "Found an invalid nameserver \"$nameserver\", skipping..."
@@ -114,6 +114,8 @@ for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
   fi
   (resolvconf -l "${WG_DEVICE}" 2>/dev/null; echo "nameserver $nameserver") | resolvconf -a "${WG_DEVICE}"
 done
+
+# Include reresolve-dns script to run every minute in crontab, start crond in background
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
 crond
 
