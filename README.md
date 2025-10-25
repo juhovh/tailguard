@@ -26,8 +26,8 @@ example a VPS, you can connect any WireGuard device to your tailnet.
 ## Benefits
 
 Why would you want to do this? For most use cases it may be easier to connect
-your device with WireGuard directly, but there are a couple of benefits with
-this bridged approach:
+your device with Tailscale or WireGuard directly, but there are a couple of
+benefits with this bridged approach:
 - the WireGuard tunnel private key is stored only on a single machine, making
   the key management less work
 - if you have a new device, you can simply log in to your tailnet with SSO,
@@ -36,7 +36,9 @@ this bridged approach:
   reconnect to different VPNs
 - you can have access to both your tailnet and WireGuard concurrently on your
   mobile device, which doesn't support multiple VPNs
-- you can have a host that is connected to both tailnet and WireGuard hosts,
+- you can temporarily share access to your WireGuard tunnel with other people
+  using Tailscale, without having to share any keys
+- you can have a server that is connected to both tailnet and WireGuard hosts,
   and serving both sides equally
 - you can create a WireGuard server that allows devices that don't support
   Tailscale to connect to the tailnet, including using tailnet exit nodes
