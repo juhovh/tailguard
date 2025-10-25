@@ -57,16 +57,6 @@ if [ -z "${TS_PORT+set}" ]; then
   TS_PORT="41641"
 fi
 
-if [ -n "${TS_AUTHKEY}" ]; then
-  if case "${TS_AUTHKEY}" in "tskey-auth-"*) true ;; *) false ;; esac; then
-    echo "Found a valid tailscale auth key, using it to perform authentication"
-  else
-    echo "Given tailscale auth key is not valid: ${TS_AUTHKEY}"
-    echo "Ignoring the key and trying to authenticate without it"
-    export -n TS_AUTHKEY
-  fi
-fi
-
 # Create wireguard device and set it up
 echo "******************************"
 echo "** Start WireGuard device   **"
@@ -227,7 +217,7 @@ else
   fi
 fi
 export TS_AUTH_ONCE="false"
-# skip TS_AUTHKEY, handled earlier
+# skip TS_AUTHKEY, allow passthrough
 # skip TS_DEST_IP, allow passthrough
 export -n TS_HEALTHCHECK_ADDR_PORT
 export TS_LOCAL_ADDR_PORT="127.0.0.1:9002"
