@@ -5,7 +5,7 @@ RUN apk add --update --no-cache git
 
 # Clone latest Tailscale version and patch it with customisation, some patches
 # are lifted from the PR https://github.com/tailscale/tailscale/pull/14575
-ARG TS_VERSION="v1.90.1"
+ARG TS_VERSION="v1.90.2"
 WORKDIR /go/src/tailscale
 COPY ./tailscale-patches /tmp/tailscale-patches
 RUN \
