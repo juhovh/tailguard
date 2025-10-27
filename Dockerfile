@@ -3,6 +3,10 @@ FROM golang:1.25.3-alpine AS build-env
 # Install latest version of git
 RUN apk add --update --no-cache git
 
+# Clone wireguard-tools for the reresolve-dns.sh script
+ARG WG_TOOLS_VERSION="v1.0.20250521"
+RUN git clone --branch "$WG_TOOLS_VERSION" https://github.com/WireGuard/wireguard-tools.git /go/src/wireguard-tools
+
 # Clone latest Tailscale version and patch it with customisation, some patches
 # are lifted from the PR https://github.com/tailscale/tailscale/pull/14575
 ARG TS_VERSION="v1.90.2"
@@ -24,10 +28,6 @@ RUN \
       -X 'tailscale.com/version.shortStamp=$VERSION_SHORT' \
       -X 'tailscale.com/version.gitCommitStamp=$VERSION_GIT_HASH'" \
       -v ./cmd/tailscale ./cmd/tailscaled ./cmd/containerboot
-
-# Clone wireguard-tools for the reresolve-dns.sh script
-ARG WG_TOOLS_VERSION="v1.0.20250521"
-RUN git clone --branch "$WG_TOOLS_VERSION" https://github.com/WireGuard/wireguard-tools.git /go/src/wireguard-tools
 
 FROM alpine:3.22.2
 
