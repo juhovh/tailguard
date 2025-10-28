@@ -57,6 +57,31 @@ if [ -z "${TS_PORT+set}" ]; then
   TS_PORT="41641"
 fi
 
+# Validate TS_DEST_IP to contain exactly one IPv4 and/or one IPv6 address
+if [ -n "${TS_DEST_IP}" ]; then
+  ipv4_found=0; ipv6_found=0
+  for dest_ip in $(echo "${TS_DEST_IP}" | tr ',' '\n'); do
+    if ! ipcalc -s -c "$dest_ip"; then
+      echo "Found invalid \$TS_DEST_IP address: $dest_ip"
+      exit 1
+    fi
+    if ipcalc -s -c -4 "$dest_ip"; then
+      if [ $ipv4_found -eq 1 ]; then
+        echo "Environment variable \$TS_DEST_IP contains multiple IPv4 addresses: ${TS_DEST_IP}"
+        exit 1
+      fi
+      ipv4_found=1
+    fi
+    if ipcalc -s -c -6 "$dest_ip"; then
+      if [ $ipv6_found -eq 1 ]; then
+        echo "Environment variable \$TS_DEST_IP contains multiple IPv6 addresses: ${TS_DEST_IP}"
+        exit 1
+      fi
+      ipv6_found=1
+    fi
+  done
+fi
+
 # Create wireguard device and set it up
 echo "******************************"
 echo "** Start WireGuard device   **"
@@ -218,7 +243,7 @@ else
 fi
 export TS_AUTH_ONCE="false"
 # skip TS_AUTHKEY, allow passthrough
-# skip TS_DEST_IP, allow passthrough
+export -n TS_DEST_IP # handled in healthcheck.sh
 export -n TS_HEALTHCHECK_ADDR_PORT
 export TS_LOCAL_ADDR_PORT="127.0.0.1:9002"
 export TS_ENABLE_HEALTH_CHECK="true"

@@ -94,12 +94,12 @@ Endpoint = <REDACTED>:51820
 PersistentKeepalive = 25
 ```
 
-Next you can either add `-e TS_DEST_IP=10.1.0.1` if running directly, or open
-the docker-compose.yml and modify it as follows:
+Next you can either add `-e TS_DEST_IP=10.1.0.1,fd00:ed7c:a960:6e9b::1` if
+running directly, or open the docker-compose.yml and modify it as follows:
 
 ```
     environment:
-      - TS_DEST_IP=10.1.0.1
+      - TS_DEST_IP=10.1.0.1,fd00:ed7c:a960:6e9b::1
 ```
 
 This will use the device wg0 and therefore the wg0.conf file for WireGuard. It
@@ -119,7 +119,7 @@ Supported configuration parameters through environment:
 - `TS_LOGIN_SERVER` - URL of the control server if not using Tailscale default
 - `TS_AUTHKEY` - Tailscale auth key for authentication if used
 - `TS_HOSTNAME` - Tailscale hostname for this device if used
-- `TS_DEST_IP` - Destination IP to route Tailscale traffic to
+- `TS_DEST_IP` - Destination IP to route Tailscale traffic to, IPv4 and/or IPv6
 - `TS_ROUTES` - Set routes to advertise, overrides autodetected routes if needed
 - `TS_EXIT_NODE` - Set Tailscale exit node, only works with client mode enabled
 
