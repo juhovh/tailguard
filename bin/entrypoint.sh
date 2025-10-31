@@ -59,25 +59,25 @@ fi
 
 # Validate TS_DEST_IP to contain exactly one IPv4 and/or one IPv6 address
 if [ -n "${TS_DEST_IP}" ]; then
-  ipv4_found=0; ipv6_found=0
+  TS_DEST_IPV4=""; TS_DEST_IPV6=""
   for dest_ip in $(echo "${TS_DEST_IP}" | tr ',' '\n'); do
     if ! ipcalc -s -c "$dest_ip"; then
       echo "Found invalid \$TS_DEST_IP address: $dest_ip"
       exit 1
     fi
     if ipcalc -s -c -4 "$dest_ip"; then
-      if [ $ipv4_found -eq 1 ]; then
+      if [ -n "${TS_DEST_IPV4}" ]; then
         echo "Environment variable \$TS_DEST_IP contains multiple IPv4 addresses: ${TS_DEST_IP}"
         exit 1
       fi
-      ipv4_found=1
+      TS_DEST_IPV4="$dest_ip"
     fi
     if ipcalc -s -c -6 "$dest_ip"; then
-      if [ $ipv6_found -eq 1 ]; then
+      if [ -n "${TS_DEST_IPV6}" ]; then
         echo "Environment variable \$TS_DEST_IP contains multiple IPv6 addresses: ${TS_DEST_IP}"
         exit 1
       fi
-      ipv6_found=1
+      TS_DEST_IPV6="$dest_ip"
     fi
   done
 fi
@@ -202,6 +202,12 @@ ip6tables -A tg-forward -i "${WG_DEVICE}" -j MARK --set-xmark "${WG_FORWARD_MARK
 # Create a chain for TailGuard postrouting, masquerade packets
 ip6tables -t nat -N tg-postrouting
 ip6tables -t nat -A tg-postrouting -m mark --mark "${WG_FORWARD_MARK}" -j MASQUERADE
+
+# Set PMTU discovery for both tun devices to avoid packet fragmentation
+iptables -t mangle -A FORWARD -o "${WG_DEVICE}" -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+iptables -t mangle -A FORWARD -o "${TS_DEVICE}" -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+ip6tables -t mangle -A FORWARD -o "${WG_DEVICE}" -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+ip6tables -t mangle -A FORWARD -o "${TS_DEVICE}" -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
 # Save WireGuard device fwmark in postrouting and restore it in prerouting
 iptables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
