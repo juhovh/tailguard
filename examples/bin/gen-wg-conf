@@ -35,18 +35,21 @@ CLIENT_DNS=$9
 
 # Generate keys for the WireGuard tunnel
 gen_wg_keys() {
-  local wg private_key public_key preshared_key
-
-  wg="docker run -i --entrypoint=wg lscr.io/linuxserver/wireguard:latest"
-  private_key=$($wg genkey)
-  public_key=$(echo $private_key | $wg pubkey)
-  preshared_key=$($wg genpsk)
-
+  local wg="docker run -i --entrypoint=wg lscr.io/linuxserver/wireguard:latest"
+  local private_key=$($wg genkey)
+  local public_key=$(echo $private_key | $wg pubkey)
   WG_KEYS="$private_key $public_key $preshared_key"
 }
 
-gen_wg_keys; IFS=" " read -r WG_SERVER_PRIVATE_KEY WG_SERVER_PUBLIC_KEY WG_PRESHARED_KEY <<< $WG_KEYS
-gen_wg_keys; IFS=" " read -r WG_CLIENT_PRIVATE_KEY WG_CLIENT_PUBLIC_KEY WG_PRESHARED_KEY <<< $WG_KEYS
+# Generate preshared key for the WireGuard tunnel
+gen_preshared_key() {
+  local wg="docker run -i --entrypoint=wg lscr.io/linuxserver/wireguard:latest"
+  WG_PRESHARED_KEY=$($wg genpsk)
+}
+
+gen_wg_keys; IFS=" " read -r WG_SERVER_PRIVATE_KEY WG_SERVER_PUBLIC_KEY <<< $WG_KEYS
+gen_wg_keys; IFS=" " read -r WG_CLIENT_PRIVATE_KEY WG_CLIENT_PUBLIC_KEY <<< $WG_KEYS
+gen_preshared_key
 
 cat << EOF > "$SERVER_CONF"
 [Interface]
