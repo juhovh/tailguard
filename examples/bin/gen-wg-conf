@@ -1,0 +1,76 @@
+#!/bin/sh
+
+if [ "$#" -lt 8 ] || [ "$#" -gt 9 ]; then
+  echo "Usage: $0 server.conf [Port] [Address] [AllowedIPs] client.conf [Endpoint] [Address] [AllowedIPs] [DNS]" >&2
+  exit 1
+fi
+
+SERVER_CONF=$1
+if ! echo "$SERVER_CONF" | grep -Eq "^[a-zA-Z0-9_=+.-]{1,15}\.conf$"; then
+  echo "Invalid server configuration name: $SERVER_CONF"
+  exit 1
+fi
+
+SERVER_PORT=$2
+if ! echo "$SERVER_PORT" | grep -Eq "^[0-9]{1,5}$"; then
+  echo "Invalid server port: $SERVER_PORT"
+  exit 1
+fi
+SERVER_ADDRESS=$3
+SERVER_ALLOWED_IPS=$4
+
+CLIENT_CONF=$5
+if ! echo "$CLIENT_CONF" | grep -Eq "^[a-zA-Z0-9_=+.-]{1,15}\.conf$"; then
+  echo "Invalid client configuration name: $CLIENT_CONF"
+  exit 1
+fi
+CLIENT_ENDPOINT=$6
+if ! echo "$CLIENT_ENDPOINT" | grep -Eq "^[^[:space:]]+$"; then
+  echo "Invalid client endpoint: $CLIENT_ENDPOINT"
+  exit 1
+fi
+CLIENT_ADDRESS=$7
+CLIENT_ALLOWED_IPS=$8
+CLIENT_DNS=$9
+
+# Generate keys for the WireGuard tunnel
+gen_wg_keys() {
+  local wg private_key public_key preshared_key
+
+  wg="docker run -i --entrypoint=wg lscr.io/linuxserver/wireguard:latest"
+  private_key=$($wg genkey)
+  public_key=$(echo $private_key | $wg pubkey)
+  preshared_key=$($wg genpsk)
+
+  WG_KEYS="$private_key $public_key $preshared_key"
+}
+
+gen_wg_keys; IFS=" " read -r WG_SERVER_PRIVATE_KEY WG_SERVER_PUBLIC_KEY WG_PRESHARED_KEY <<< $WG_KEYS
+gen_wg_keys; IFS=" " read -r WG_CLIENT_PRIVATE_KEY WG_CLIENT_PUBLIC_KEY WG_PRESHARED_KEY <<< $WG_KEYS
+
+cat << EOF > "$SERVER_CONF"
+[Interface]
+PrivateKey = $WG_SERVER_PRIVATE_KEY
+Address = $SERVER_ADDRESS
+ListenPort = $SERVER_PORT
+
+[Peer]
+PublicKey = $WG_CLIENT_PUBLIC_KEY
+PresharedKey = $WG_PRESHARED_KEY
+AllowedIPs = $SERVER_ALLOWED_IPS
+EOF
+
+cat << EOF > "$CLIENT_CONF"
+[Interface]
+PrivateKey = $WG_CLIENT_PRIVATE_KEY
+Address = $CLIENT_ADDRESS
+DNS = $CLIENT_DNS
+
+[Peer]
+PublicKey = $WG_SERVER_PUBLIC_KEY
+PresharedKey = $WG_PRESHARED_KEY
+AllowedIPs = $CLIENT_ALLOWED_IPS
+Endpoint = $CLIENT_ENDPOINT:$SERVER_PORT
+PersistentKeepalive = 25
+EOF
+
