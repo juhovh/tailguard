@@ -37,7 +37,7 @@ COPY --from=build-env /go/bin/* /usr/local/bin/
 COPY --from=build-env /go/src/wireguard-tools/contrib/reresolve-dns/reresolve-dns.sh ./
 
 RUN \
-  apk add --update --no-cache iptables ip6tables ipcalc curl wireguard-tools wireguard-go && \
+  apk add --update --no-cache ethtool iptables ip6tables ipcalc curl wireguard-tools wireguard-go && \
   sed -i 's|^RESTARTCMD=$|RESTARTCMD="true"|' /usr/sbin/resolvconf && \
   sed -i 's|\[\[ $proto == -4 \]\] && cmd sysctl -q net\.ipv4\.conf\.all\.src_valid_mark=1|[[ $proto == -4 ]] \&\& [[ $(sysctl -n net.ipv4.conf.all.src_valid_mark) != 1 ]] \&\& cmd sysctl -q net.ipv4.conf.all.src_valid_mark=1|' /usr/bin/wg-quick
 
