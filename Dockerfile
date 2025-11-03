@@ -5,7 +5,8 @@ RUN apk add --update --no-cache git
 
 # Clone wireguard-tools for the reresolve-dns.sh script
 ARG WG_TOOLS_VERSION="v1.0.20250521"
-RUN git clone --branch "$WG_TOOLS_VERSION" https://github.com/WireGuard/wireguard-tools.git /go/src/wireguard-tools
+RUN git -c advice.detachedHead=false clone --branch "$WG_TOOLS_VERSION" \
+  https://github.com/WireGuard/wireguard-tools.git /go/src/wireguard-tools
 
 # Clone latest Tailscale version and patch it with customisation, some patches
 # are lifted from the PR https://github.com/tailscale/tailscale/pull/14575
@@ -13,7 +14,8 @@ ARG TS_VERSION="v1.90.6"
 WORKDIR /go/src/tailscale
 COPY ./tailscale-patches /tmp/tailscale-patches
 RUN \
-  git clone --branch "$TS_VERSION" https://github.com/tailscale/tailscale.git /go/src/tailscale && \
+  git -c advice.detachedHead=false clone --branch "$TS_VERSION" \
+    https://github.com/tailscale/tailscale.git /go/src/tailscale && \
   git -c user.name="TailGuard" -c user.email="" am /tmp/tailscale-patches/*.patch
 
 # Download dependencies and build Tailscale
