@@ -160,3 +160,5 @@ If you have additional subnets in your tailnet (e.g. `192.168.1.0/24`) that
 you'd like to access, just add similar routing rules for those. TailGuard should
 take care of forwarding all the published subnets to the tailnet, as long as it
 is able to receive packets through the WireGuard tunnel first.
+
+For more examples, please see the [examples](examples) directory.

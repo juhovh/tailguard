@@ -30,6 +30,6 @@ docker run --rm -it \
   --cap-add NET_ADMIN --device /dev/net/tun \
   --sysctl net.ipv4.ip_forward=1 --sysctl net.ipv6.conf.all.forwarding=1 \
   --sysctl net.ipv4.conf.all.src_valid_mark=1 \
-  --network ip6net -p 41641:41641/udp -p 51820:51820/udp \
   --env TG_CLIENT_MODE=1 --env TS_EXIT_NODE=$EXIT_NODE \
+  --network ip6net -p 41641:41641/udp -p 51820:51820/udp \
   --name tailguard ghcr.io/juhovh/tailguard:latest

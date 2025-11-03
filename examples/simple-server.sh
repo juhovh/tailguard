@@ -26,7 +26,6 @@ docker network inspect ip6net 2>&1 > /dev/null || docker network create ip6net
 docker run --rm -it \
   -v ./server.conf:/etc/wireguard/wg0.conf -v ./state:/tailguard/state \
   --cap-add NET_ADMIN --device /dev/net/tun \
-  --sysctl net.ipv4.ip_forward=1 --sysctl net.ipv6.conf.all.forwarding=1 \
   --sysctl net.ipv4.conf.all.src_valid_mark=1 \
   --env TG_EXPOSE_HOST=1 --env TG_CLIENT_MODE=1 --env WG_ISOLATE_PEERS=1 --env TS_ROUTES= \
   --network ip6net -p 41641:41641/udp -p 51820:51820/udp \
