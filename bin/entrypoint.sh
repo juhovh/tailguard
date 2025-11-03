@@ -83,7 +83,8 @@ if [ -n "${TS_DEST_IP}" ]; then
 fi
 
 # https://tailscale.com/kb/1320/performance-best-practices#ethtool-configuration
-NETDEV=$(ip -o route show default | cut -f 5 -d " ")
+NETDEV=$(ip -o -4 route show default | cut -f 5 -d " ")
+[ -z "$NETDEV" ] && NETDEV=$(ip -o -6 route show default | cut -f 5 -d " ")
 if [ -n "$NETDEV" ] && ethtool -k $NETDEV | grep -q rx-udp-gro-forwarding; then
   echo "Setting rx-udp-gro-forwarding on rx-gro-list off for device $NETDEV"
   ethtool -K $NETDEV rx-udp-gro-forwarding on rx-gro-list off
