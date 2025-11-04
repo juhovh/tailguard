@@ -64,20 +64,11 @@ if [ -n "${TS_DEST_IP}" ]; then
     if ! ipcalc -s -c "$dest_ip"; then
       echo "Found invalid \$TS_DEST_IP address: $dest_ip"
       exit 1
-    fi
-    if ipcalc -s -c -4 "$dest_ip"; then
-      if [ -n "${TS_DEST_IPV4}" ]; then
-        echo "Environment variable \$TS_DEST_IP contains multiple IPv4 addresses: ${TS_DEST_IP}"
-        exit 1
-      fi
-      TS_DEST_IPV4="$dest_ip"
-    fi
-    if ipcalc -s -c -6 "$dest_ip"; then
-      if [ -n "${TS_DEST_IPV6}" ]; then
-        echo "Environment variable \$TS_DEST_IP contains multiple IPv6 addresses: ${TS_DEST_IP}"
-        exit 1
-      fi
-      TS_DEST_IPV6="$dest_ip"
+    elif ipcalc -s -c -4 "$dest_ip" && [ -z "${TS_DEST_IPV4}" ]; then TS_DEST_IPV4="$dest_ip"
+    elif ipcalc -s -c -6 "$dest_ip" && [ -z "${TS_DEST_IPV6}" ]; then TS_DEST_IPV6="$dest_ip"
+    else
+      echo "Variable \$TS_DEST_IP contains multiple addresses of the same type: ${TS_DEST_IP}"
+      exit 1
     fi
   done
 fi
