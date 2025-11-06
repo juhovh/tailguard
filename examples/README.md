@@ -50,13 +50,13 @@ Usage:
 ## Tailscale Exit Node
 
 This is a WireGuard server similar to the Simple Bridge example, with the
-difference that it forwards all traffic to a given Tailscale exit node, allowing
-to use a Tailscale exit node through WireGuard. It also supports using the
+difference that it forwards all traffic to the optimal exit node, allowing to
+use a Tailscale exit node through WireGuard. It also supports using the
 `TS_DEST_IP` environment variable in case forwarding traffic the other way
 around is also desired.
 
 Usage:
 ```
-./tailscale-exit-node.sh server.example.com 100.123.123.123
+./tailscale-exit-node.sh server.example.com
 ```
 

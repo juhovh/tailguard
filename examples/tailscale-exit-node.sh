@@ -1,13 +1,12 @@
 #!/bin/sh
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 1 ]; then
   echo "Please provide a public address or hostname for the WireGuard server" >&2
   echo "Please provide the Tailscale IP address of the used exit node" >&2
-  echo "Usage: $0 [endpoint] [exit-node]" >&2
+  echo "Usage: $0 [endpoint]" >&2
   exit 1
 fi
 ADDRESS="$1"
-EXIT_NODE="$2"
 
 echo
 echo "Starting TailGuard as a WireGuard server, routing all traffic through Tailscale"
@@ -30,6 +29,6 @@ docker run --rm -it \
   --cap-add NET_ADMIN --device /dev/net/tun \
   --sysctl net.ipv4.ip_forward=1 --sysctl net.ipv6.conf.all.forwarding=1 \
   --sysctl net.ipv4.conf.all.src_valid_mark=1 \
-  --env TG_CLIENT_MODE=1 --env TS_EXIT_NODE=$EXIT_NODE \
+  --env TG_CLIENT_MODE=1 --env TS_EXIT_NODE=auto:any \
   --network ip6net -p 41641:41641/udp -p 51820:51820/udp \
   --name tailguard ghcr.io/juhovh/tailguard:latest
