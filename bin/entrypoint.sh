@@ -271,6 +271,14 @@ if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS
 if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 export TS_EXTRA_ARGS
 
+# Delay exit node execution until the system is healthy since autoselection doesn't work,
+# see https://github.com/tailscale/tailscale/issues/17768 for more details
+DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
+if [ -n "${TS_EXIT_NODE}" ]; then
+  echo "Creating a delayed script for re-setting the exit node to support autoselect"
+  echo "tailscale set --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access" > "${DELAYED_SCRIPT_PATH}"
+fi
+
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
 echo "Starting tailscale with args: ${TS_EXTRA_ARGS}"
 

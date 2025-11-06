@@ -38,3 +38,15 @@ done
 HEALTHZ_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:9002/healthz")"
 echo "Tailscale health endpoint returned response code: ${HEALTHZ_CODE}"
 if [ $HEALTHZ_CODE != "200" ]; then exit 1; fi
+
+DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
+if [ -f "${DELAYED_SCRIPT_PATH}" ]; then
+  DELAYED_SCRIPT=$(cat "${DELAYED_SCRIPT_PATH}")
+  rm "${DELAYED_SCRIPT_PATH}"
+
+  echo "Executing delayed script since the system is healthy:"
+  for line in "${DELAYED_SCRIPT}"; do
+    echo "# $line"
+    eval "$line"
+  done
+fi
