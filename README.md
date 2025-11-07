@@ -122,6 +122,7 @@ Supported configuration parameters through environment:
 - `TS_DEST_IP` - Destination IP to route Tailscale traffic to, IPv4 and/or IPv6
 - `TS_ROUTES` - Set routes to advertise, overrides autodetected routes if needed
 - `TS_EXIT_NODE` - Set Tailscale exit node, only works with client mode enabled
+- `TS_WEBCLIENT` - Set to 1 if you want to enable the web interface on port 5252
 
 Some of these parameteres follow the naming of Tailscale Docker image
 [parameters](https://tailscale.com/kb/1282/docker), in which case they should

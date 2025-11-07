@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# This is a path to execute scripts on a healthy Tailscale,
+# must be the same path as set in healtcheck.sh
+DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
+
 # Use the top 8 bits for WireGuard forwarding mark, they
 # are not used by neither Tailscale nor wg-quick scripts
 WG_FORWARD_MARK="0x1000000/0xff000000"
@@ -71,6 +75,13 @@ if [ -n "${TS_DEST_IP}" ]; then
       exit 1
     fi
   done
+fi
+
+if [ ${TS_WEBCLIENT:-0} -eq 1 ]; then
+  echo "Enabling the Tailscale web interface"
+else
+  # Default to not enabling the web interface
+  TS_WEBCLIENT=0
 fi
 
 # https://tailscale.com/kb/1320/performance-best-practices#ethtool-configuration
@@ -271,13 +282,17 @@ if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS
 if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 export TS_EXTRA_ARGS
 
+if [ ${TS_WEBCLIENT} -eq 1 ]; then
+  echo "Adding webclient enablement to a delayed script"
+  echo "tailscale set --webclient" >> "${DELAYED_SCRIPT_PATH}"
+fi
+
 # Set the exit node information second time in healthcheck.sh once the system is healthy,
 # since autoselection in Tailscale doesn't work for some reason when set on startup,
 # see https://github.com/tailscale/tailscale/issues/17768 for more details
-DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
 if [ -n "${TS_EXIT_NODE}" ]; then
-  echo "Creating a delayed script for re-setting the exit node to support autoselect"
-  echo "tailscale set --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access" > "${DELAYED_SCRIPT_PATH}"
+  echo "Adding re-setting of the exit node to a delayed script to support autoselect"
+  echo "tailscale set --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access" >> "${DELAYED_SCRIPT_PATH}"
 fi
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"

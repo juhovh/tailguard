@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# This is a path to execute scripts on a healthy Tailscale, 
+# must be the same path as set in entrypoint.sh
+DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
+
 update_firewall() {
   if ! $iptables -C $CHAIN -j "ts-$chain" 2>/dev/null; then
     echo "The $iptables ts-$chain rules are not set up yet, failing healthcheck"
@@ -39,12 +43,12 @@ HEALTHZ_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:9002/he
 echo "Tailscale health endpoint returned response code: ${HEALTHZ_CODE}"
 if [ $HEALTHZ_CODE != "200" ]; then exit 1; fi
 
-DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
+# Run delayed script if present, generally created by entrypoint.sh
 if [ -f "${DELAYED_SCRIPT_PATH}" ]; then
   DELAYED_SCRIPT=$(cat "${DELAYED_SCRIPT_PATH}")
   rm "${DELAYED_SCRIPT_PATH}"
 
-  echo "Executing delayed script since the system is healthy:"
+  echo "Executing delayed script on a healthy Tailscale:"
   for line in "${DELAYED_SCRIPT}"; do
     echo "[#] $line"
   done
