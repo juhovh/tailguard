@@ -46,7 +46,7 @@ if [ -f "${DELAYED_SCRIPT_PATH}" ]; then
 
   echo "Executing delayed script since the system is healthy:"
   for line in "${DELAYED_SCRIPT}"; do
-    echo "# $line"
-    eval "$line"
+    echo "[#] $line"
   done
+  eval "${DELAYED_SCRIPT}"
 fi
