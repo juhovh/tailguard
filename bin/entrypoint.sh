@@ -271,7 +271,8 @@ if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS
 if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 export TS_EXTRA_ARGS
 
-# Delay exit node execution until the system is healthy since autoselection doesn't work,
+# Set the exit node information second time in healthcheck.sh once the system is healthy,
+# since autoselection in Tailscale doesn't work for some reason when set on startup,
 # see https://github.com/tailscale/tailscale/issues/17768 for more details
 DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
 if [ -n "${TS_EXIT_NODE}" ]; then
