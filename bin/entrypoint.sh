@@ -13,32 +13,32 @@ if [ ${TG_EXPOSE_HOST:-0} -eq 1 ]; then
   echo "Expose host to Tailscale and WireGuard networks"
 else
   # Default to not exposing the host
-  TG_EXPOSE_HOST=0
+  export TG_EXPOSE_HOST=0
 fi
 
 if [ ${TG_CLIENT_MODE:-0} -eq 1 ]; then
   echo "Using Tailscale client mode, advertisements disabled, exit node allowed"
 else
   # Default to not being in client mode
-  TG_CLIENT_MODE=0
+  export TG_CLIENT_MODE=0
 fi
 
 if [ -z "${TG_NAMESERVERS+set}" ]; then
   echo "Environment variable \$TS_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
-  TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
+  export TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
 fi
 
 # Check that the WireGuard device env variable is set
 if [ -z "${WG_DEVICE+set}" ]; then
   echo "Environment variable \$WG_DEVICE is not set, defaulting to wg0"
-  WG_DEVICE="wg0"
+  export WG_DEVICE="wg0"
 fi
 
 if [ ${WG_ISOLATE_PEERS:-0} -eq 1 ]; then
   echo "Isolating WireGuard peers from each other"
 else
   # Default to not isolating peers
-  WG_ISOLATE_PEERS=0
+  export WG_ISOLATE_PEERS=0
 fi
 
 # Check that the config file exists and has the right permissions
@@ -52,13 +52,13 @@ chmod 600 "${WG_CONF_PATH}"
 # Check that the Tailscale device env variable is set
 if [ -z "${TS_DEVICE+set}" ]; then
   echo "Environment variable \$TS_DEVICE is not set, defaulting to tailscale0"
-  TS_DEVICE="tailscale0"
+  export TS_DEVICE="tailscale0"
 fi
 
 # Check that the Tailscale port env variable is set
 if [ -z "${TS_PORT+set}" ]; then
   echo "Environment variable \$TS_PORT is not set, defaulting to 41641"
-  TS_PORT="41641"
+  export TS_PORT="41641"
 fi
 
 # Validate TS_DEST_IP to contain exactly one IPv4 and/or one IPv6 address
@@ -235,6 +235,11 @@ ip -4 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
 ip -6 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
 
 echo "All rules set up, waiting for healthcheck for finalisation"
+
+echo "******************************"
+echo "** Start TailGuard daemon   **"
+echo "******************************"
+/usr/local/bin/tgdaemon &
 
 echo "******************************"
 echo "** Start Tailscale daemon   **"
