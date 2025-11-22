@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <style>
+        {{.Style}}
+    </style>
+</head>
+<body>
+{{with .TailGuardConfig}}
+    <div>
+        <h1>TailGuard</h1>
+        <div>
+            <h2>General</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Expose host</td>
+                    <td>{{if .ExposeHost}}Yes{{else}}No{{end}}</td>
+                </tr>
+                <tr>
+                    <td>Client mode</td>
+                    <td>{{if .ClientMode}}Yes{{else}}No{{end}}</td>
+                </tr>
+                {{if .Nameservers}}
+                <tr>
+                    <td>Nameservers</td>
+                    <td>{{.Nameservers}}</td>
+                </tr>
+                {{end}}
+                <tr>
+                    <td>WireGuard device</td>
+                    <td>{{.WireGuardDevice}}</td>
+                </tr>
+                <tr>
+                    <td>WireGuard isolate peers</td>
+                    <td>{{if .WireGuardIsolatePeers}}Yes{{else}}No{{end}}</td>
+                </tr>
+                {{if .TailscaleDevice}}
+                <tr>
+                    <td>Tailscale device</td>
+                    <td>{{.TailscaleDevice}}</td>
+                </tr>
+                {{end}}
+                <tr>
+                    <td>Tailscale port</td>
+                    <td>{{.TailscalePort}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{{end}}
+{{with .TailscaleStatus}}
+    <div>
+        <h1>Tailscale</h1>
+        <div>
+            <h2>General</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Status</td>
+                    <td>{{.Status}}</td>
+                </tr>
+                <tr>
+                    <td>Managed by</td>
+                    <td>
+                        {{if .IsTagged}}
+                            {{range .Tags}}
+                                <span class="tag">{{.}}</span>
+                            {{end}}
+                        {{else}}
+                            {{.Profile.DisplayName}}
+                        {{end}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Machine name</td>
+                    <td>{{.DeviceName}}</td>
+                </tr>
+                <tr>
+                    <td>OS</td>
+                    <td>{{.OS}}</td>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>{{.ID}}</td>
+                </tr>
+                <tr>
+                    <td>Tailscale version</td>
+                    <td>{{.IPNVersion}}</td>
+                </tr>
+                <tr>
+                    <td>Key expiry</td>
+                    <td>
+                        {{if .KeyExpired}}
+                            <span class="expiry">Expired</span>
+                        {{else if .KeyExpiry}}
+                            <span class="expiry">{{.KeyExpiry}}</span>
+                        {{else}}
+                            <span class="expiry">No expiry</span>
+                        {{end}}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <h2>Addresses</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Tailscale IPv4</td>
+                    <td>{{.IPv4}}</td>
+                </tr>
+                <tr>
+                    <td>Tailscale IPv6</td>
+                    <td>{{.IPv6}}</td>
+                </tr>
+                <tr>
+                    <td>Short domain</td>
+                    <td>{{.DeviceName}}</td>
+                </tr>
+                <tr>
+                    <td>Full domain</td>
+                    <td>{{.DeviceName}}.{{.TailnetName}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        {{with .RouteInfo}}
+        <div>
+            <h2>Routes</h2>
+            <table>
+                <tbody>
+                {{if .UsingExitNode}}
+                    <tr>
+                        <td>Exit node</td>
+                        <td>{{.UsingExitNode.Name}}</td>
+                    </tr>
+                {{else}}
+                    <tr>
+                        <td>Advertising exit node</td>
+                        <td>
+                            {{if .AdvertisingExitNode}}Yes{{else}}No{{end}}
+                        </td>
+                    </tr>
+                    {{if .AdvertisingExitNode}}
+                        <tr>
+                            <td>Exit node approved</td>
+                            <td>
+                                {{if .AdvertisingExitNodeApproved}}
+                                    Yes
+                                {{else}}
+                                    No
+                                {{end}}
+                            </td>
+                        </tr>
+                    {{end}}
+                {{end}}
+                <tr>
+                    <td>Advertising routes</td>
+                    <td>
+                        {{if .AdvertisedRoutes}}
+                            Yes
+                        {{else}}
+                            No
+                        {{end}}
+                    </td>
+                </tr>
+                {{if .AdvertisedRoutes}}
+                    <tr>
+                        <td>Advertised routes</td>
+                        <td>
+                            {{range .AdvertisedRoutes}}
+                                <span class="route">{{.Route}} {{if .Approved}}Approved{{end}}</span><br/>
+                            {{end}}
+                        </td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+            {{end}}
+            <div>
+                <h2>Debug</h2>
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>TUN Mode</td>
+                        <td>
+                            {{if .TUNMode}}
+                                Yes
+                            {{else}}
+                                No
+                            {{end}}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{{end}}
+{{if not .TailscaleStatus}}
+    <div>
+        <h1>Tailscale</h1>
+        <div>
+            Tailscale status not available.
+        </div>
+        <div>
+            {{.TailscaleError}}
+        </div>
+    </div>
+{{end}}
+{{with .WireGuardStatus}}
+    <div>
+        <h1>WireGuard</h1>
+        <div>
+            <h2>Device</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Interface</td>
+                    <td>{{.Name}}</td>
+                </tr>
+                <tr>
+                    <td>Public key</td>
+                    <td>{{.PublicKey}}</td>
+                </tr>
+                <tr>
+                    <td>Listening port</td>
+                    <td>{{.ListenPort}}</td>
+                </tr>
+
+                <tr>
+                    <td>Firewall mark</td>
+                    <td>{{.FirewallMark}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        {{range .Peers}}
+            <div>
+                <h2>Peer: {{.PublicKey}}</h2>
+                <table>
+                    <tbody>
+                    {{if .Endpoint}}
+                        <tr>
+                            <td>Endpoint</td>
+                            <td>{{.Endpoint}}</td>
+                        </tr>
+                    {{end}}
+                    <tr>
+                        <td>Allowed IPs</td>
+                        <td>
+                            {{range .AllowedIPs}}
+                                <span class="allowed-ip">{{.}}</span><br/>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{if .Endpoint}}
+                        <tr>
+                            <td>Latest handshake</td>
+                            <td>{{.LastHandshakeTime}}</td>
+                        </tr>
+                        <tr>
+                            <td>Transfer</td>
+                            <td>Rx: {{.ReceiveBytes}} bytes, Tx: {{.TransmitBytes}} bytes</td>
+                        </tr>
+                    {{end}}
+                    {{if .PersistentKeepaliveInterval}}
+                        <tr>
+                            <td>Persistent keepalive</td>
+                            <td>{{.PersistentKeepaliveInterval}}</td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div>
+        {{end}}
+    </div>
+{{end}}
+{{if not .WireGuardStatus}}
+    <div>
+        <h1>WireGuard</h1>
+        <div>
+            WireGuard status for interface {{.TailGuardConfig.WireGuardDevice}} not available.
+        </div>
+        <div>
+            {{.WireGuardError}}
+        </div>
+    </div>
+{{end}}
+</body>
+</html>
