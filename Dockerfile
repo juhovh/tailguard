@@ -31,6 +31,12 @@ RUN \
       -X 'tailscale.com/version.gitCommitStamp=$VERSION_GIT_HASH'" \
       -v ./cmd/tailscale ./cmd/tailscaled ./cmd/containerboot
 
+# Build tailguard daemon and install it
+COPY ./daemon /go/src/tailguard-daemon
+WORKDIR /go/src/tailguard-daemon
+RUN go mod download
+RUN go install
+
 FROM alpine:3.22.2
 
 WORKDIR /tailguard

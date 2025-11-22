@@ -237,6 +237,11 @@ ip -6 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
 echo "All rules set up, waiting for healthcheck for finalisation"
 
 echo "******************************"
+echo "** Start TailGuard daemon   **"
+echo "******************************"
+/usr/local/bin/daemon &
+
+echo "******************************"
 echo "** Start Tailscale daemon   **"
 echo "******************************"
 
