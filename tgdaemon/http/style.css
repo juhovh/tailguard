@@ -122,11 +122,7 @@ td:last-child {
     font-weight: 500
 }
 
-.tag span:first-child {
-    font-weight: 500
-}
-
-.tag span:last-child {
+.tag span {
     color: #706e6d
 }
 
