@@ -112,6 +112,7 @@ Supported configuration parameters through environment:
 - `TG_EXPOSE_HOST` - Set to 1 if you want to allow connections from TS and WG peers
 - `TG_CLIENT_MODE` - Set to 1 to behave as a Tailscale client, allows setting an exit node
 - `TG_NAMESERVERS` - Fallback nameservers for resolving hostnames (**default:** Cloudflare 1.1.1.1)
+- `TS_WEBUI_PORT` - Set to TCP port to serve status UI on, will be opened on firewall automatically
 - `WG_DEVICE` - WireGuard device name, must be valid and match config file name (**default:** wg0)
 - `WG_ISOLATE_PEERS` - Set to 1 to isolate WireGuard peers from each other
 - `TS_DEVICE` - Tailscale device name, must be a valid device name (**default:** tailscale0)
@@ -122,7 +123,6 @@ Supported configuration parameters through environment:
 - `TS_DEST_IP` - Destination IP to route Tailscale traffic to, IPv4 and/or IPv6
 - `TS_ROUTES` - Set routes to advertise, overrides autodetected routes if needed
 - `TS_EXIT_NODE` - Set Tailscale exit node, only works with client mode enabled
-- `TS_WEBCLIENT` - Set to 1 if you want to enable the web interface on port 5252
 
 Some of these parameteres follow the naming of Tailscale Docker image
 [parameters](https://tailscale.com/kb/1282/docker), in which case they should

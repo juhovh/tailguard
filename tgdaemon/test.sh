@@ -3,4 +3,4 @@
 TG_EXPOSE_HOST=0 TG_CLIENT_MODE=0 TG_NAMESERVERS="" \
 WG_DEVICE="wg0" WG_ISOLATE_PEERS=0 \
 TS_DEVICE="tailscale0" TS_PORT=41641 \
-go run main.go
+go run main.go "$@"

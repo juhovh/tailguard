@@ -110,7 +110,7 @@ td:last-child {
     font-size: 0.75rem
 }
 
-.tag, .route, .allowed-ip, .expiry {
+.tag, .route, .ip-address, .datetime {
     display: inline-flex;
     align-items: center;
     background: #fff;
@@ -122,11 +122,11 @@ td:last-child {
     font-weight: 500
 }
 
-.tag span {
+.tag {
     color: #706e6d
 }
 
-.expiry {
+.datetime {
     background: #fff;
     color: #232222;
     border-color: #eeeae9

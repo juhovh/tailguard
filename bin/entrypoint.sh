@@ -162,7 +162,8 @@ iptables -P INPUT DROP
 # Create a chain for TailGuard input, dropping incoming connections
 iptables -N tg-input
 if [ -n "${TG_WEBUI_PORT}" ]; then
-  iptables -A tg-input -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+  iptables -A tg-input -i "${WG_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+  iptables -A tg-input -i "${TS_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
 fi
 if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
   iptables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
@@ -199,7 +200,8 @@ ip6tables -P INPUT DROP
 # Create a chain for TailGuard input, dropping incoming connections
 ip6tables -N tg-input
 if [ -n "${TG_WEBUI_PORT}" ]; then
-  ip6tables -A tg-input -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+  ip6tables -A tg-input -i "${WG_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+  ip6tables -A tg-input -i "${TS_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
 fi
 if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
   ip6tables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
@@ -252,10 +254,10 @@ echo "** Start TailGuard daemon   **"
 echo "******************************"
 
 if [ -n "${TG_WEBUI_PORT}" ]; then
-  echo "Starting daemon listening on port ${TG_WEBUI_PORT}"
+  echo "Starting daemon, listening on port ${TG_WEBUI_PORT}"
   /usr/local/bin/tgdaemon --port ${TG_WEBUI_PORT} &
 else
-  echo "WebUI not enabled, daemon unnecessary and not started"
+  echo "WebUI not enabled, daemon not started"
 fi
 
 echo "******************************"

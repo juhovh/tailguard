@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="refresh" content="30">
     <meta charset="UTF-8">
     <title>{{.Title}}</title>
     <style>
@@ -10,11 +11,11 @@
 <body>
 <div class="page-header">
     <div class="page-header-content">
-            {{.Logo}}
-<!--        <svg class="page-icon" width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M50 10 L20 22 L20 45 C20 65 30 82 50 88 C70 82 80 65 80 45 L80 22 L50 10 Z" fill="#e8e3d5" stroke="#e8e3d5" stroke-width="2"/>
-            <path d="M50 30 C45 30 42 32 42 36 C42 38 43 40 45 42 L50 48 L55 42 C57 40 58 38 58 36 C58 32 55 30 50 30 Z M40 50 C40 48 42 46 44 46 L56 46 C58 46 60 48 60 50 L60 65 C60 68 57 70 54 70 L46 70 C43 70 40 68 40 65 L40 50 Z" fill="#1a1f2e"/>
-        </svg>-->
+        {{.Logo}}
+        <!--        <svg class="page-icon" width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L20 22 L20 45 C20 65 30 82 50 88 C70 82 80 65 80 45 L80 22 L50 10 Z" fill="#e8e3d5" stroke="#e8e3d5" stroke-width="2"/>
+                    <path d="M50 30 C45 30 42 32 42 36 C42 38 43 40 45 42 L50 48 L55 42 C57 40 58 38 58 36 C58 32 55 30 50 30 Z M40 50 C40 48 42 46 44 46 L56 46 C58 46 60 48 60 50 L60 65 C60 68 57 70 54 70 L46 70 C43 70 40 68 40 65 L40 50 Z" fill="#1a1f2e"/>
+                </svg>-->
         <h1>{{.Title}}</h1>
     </div>
     <p>Network Status Dashboard</p>
@@ -34,12 +35,10 @@
                     <td>Client mode</td>
                     <td>{{if .ClientMode}}Yes{{else}}No{{end}}</td>
                 </tr>
-                {{if .Nameservers}}
                 <tr>
                     <td>Nameservers</td>
                     <td>{{.Nameservers}}</td>
                 </tr>
-                {{end}}
                 <tr>
                     <td>WireGuard device</td>
                     <td>{{.WireGuardDevice}}</td>
@@ -48,12 +47,10 @@
                     <td>WireGuard isolate peers</td>
                     <td>{{if .WireGuardIsolatePeers}}Yes{{else}}No{{end}}</td>
                 </tr>
-                {{if .TailscaleDevice}}
                 <tr>
                     <td>Tailscale device</td>
                     <td>{{.TailscaleDevice}}</td>
                 </tr>
-                {{end}}
                 <tr>
                     <td>Tailscale port</td>
                     <td>{{.TailscalePort}}</td>
@@ -79,7 +76,7 @@
                     <td>
                         {{if .IsTagged}}
                             {{range .Tags}}
-                                <span class="tag"><span>{{.}}</span></span>
+                                <span class="tag">{{.}}</span>
                             {{end}}
                         {{else}}
                             {{.Profile.DisplayName}}
@@ -106,11 +103,11 @@
                     <td>Key expiry</td>
                     <td>
                         {{if .KeyExpired}}
-                            <span class="expiry">Expired</span>
+                            <span class="datetime">Expired</span>
                         {{else if .KeyExpiry}}
-                            <span class="expiry">{{.KeyExpiry}}</span>
+                            <span class="datetime">{{.KeyExpiry}}</span>
                         {{else}}
-                            <span class="expiry">No expiry</span>
+                            <span class="datetime">No expiry</span>
                         {{end}}
                     </td>
                 </tr>
@@ -251,11 +248,15 @@
                 </tbody>
             </table>
         </div>
-        {{range .Peers}}
+        {{range $index, $peer := .Peers}}
             <div class="card">
-                <h2>Peer: {{.PublicKey}}</h2>
+                <h2>Peer {{$index}}</h2>
                 <table>
                     <tbody>
+                    <tr>
+                        <td>Public key</td>
+                        <td>{{.PublicKey}}</td>
+                    </tr>
                     {{if .Endpoint}}
                         <tr>
                             <td>Endpoint</td>
@@ -266,18 +267,18 @@
                         <td>Allowed IPs</td>
                         <td>
                             {{range .AllowedIPs}}
-                                <span class="allowed-ip">{{.}}</span><br/>
+                                <span class="ip-address">{{.}}</span>
                             {{end}}
                         </td>
                     </tr>
                     {{if .Endpoint}}
                         <tr>
                             <td>Latest handshake</td>
-                            <td>{{.LastHandshakeTime}}</td>
+                            <td>{{.LastHandshakeTimeAgo}} ago</td>
                         </tr>
                         <tr>
                             <td>Transfer</td>
-                            <td>Rx: {{.ReceiveBytes}} bytes, Tx: {{.TransmitBytes}} bytes</td>
+                            <td>{{.ReceiveBytesStr}} received, {{.TransmitBytesStr}} sent</td>
                         </tr>
                     {{end}}
                     {{if .PersistentKeepaliveInterval}}

@@ -61,7 +61,7 @@ func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 		tsError = err.Error()
 	}
 
-	wgStatus, err := s.wgClient.GetStatus("wg0")
+	wgStatus, err := s.wgClient.GetStatus(req.Context(), "wg0")
 	if err != nil {
 		wgError = err.Error()
 	}
