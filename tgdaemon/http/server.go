@@ -12,6 +12,9 @@ import (
 	"github.com/juhovh/tailguard/tgdaemon/env"
 )
 
+//go:embed logo.svg
+var logo string
+
 //go:embed style.css
 var style string
 
@@ -66,6 +69,7 @@ func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 	data := TemplateData{
 		Title: "TailGuard Status",
 		Style: template.CSS(style),
+		Logo:  template.HTML(logo),
 
 		TailGuardConfig: s.tgConfig,
 

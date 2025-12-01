@@ -11,6 +11,7 @@ import (
 type TemplateData struct {
 	Title string
 	Style template.CSS
+	Logo  template.HTML
 
 	TailGuardConfig env.TailGuardConfig
 
