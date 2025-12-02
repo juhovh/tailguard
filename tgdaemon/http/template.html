@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="refresh" content="30">
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <style>
+        {{.Style}}
+    </style>
+</head>
+<body>
+<div class="page-header">
+    <div class="page-header-content">
+        {{.Logo}}
+        <!--        <svg class="page-icon" width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L20 22 L20 45 C20 65 30 82 50 88 C70 82 80 65 80 45 L80 22 L50 10 Z" fill="#e8e3d5" stroke="#e8e3d5" stroke-width="2"/>
+                    <path d="M50 30 C45 30 42 32 42 36 C42 38 43 40 45 42 L50 48 L55 42 C57 40 58 38 58 36 C58 32 55 30 50 30 Z M40 50 C40 48 42 46 44 46 L56 46 C58 46 60 48 60 50 L60 65 C60 68 57 70 54 70 L46 70 C43 70 40 68 40 65 L40 50 Z" fill="#1a1f2e"/>
+                </svg>-->
+        <h1>{{.Title}}</h1>
+    </div>
+    <p>Network Status Dashboard</p>
+</div>
+{{with .TailGuardConfig}}
+    <div>
+        <h1>TailGuard</h1>
+        <div class="card">
+            <h2>General</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Expose host</td>
+                    <td>{{if .ExposeHost}}Yes{{else}}No{{end}}</td>
+                </tr>
+                <tr>
+                    <td>Client mode</td>
+                    <td>{{if .ClientMode}}Yes{{else}}No{{end}}</td>
+                </tr>
+                <tr>
+                    <td>Nameservers</td>
+                    <td>{{.Nameservers}}</td>
+                </tr>
+                <tr>
+                    <td>WireGuard device</td>
+                    <td>{{.WireGuardDevice}}</td>
+                </tr>
+                <tr>
+                    <td>WireGuard isolate peers</td>
+                    <td>{{if .WireGuardIsolatePeers}}Yes{{else}}No{{end}}</td>
+                </tr>
+                <tr>
+                    <td>Tailscale device</td>
+                    <td>{{.TailscaleDevice}}</td>
+                </tr>
+                <tr>
+                    <td>Tailscale port</td>
+                    <td>{{.TailscalePort}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{{end}}
+{{with .TailscaleStatus}}
+    <div>
+        <h1>Tailscale</h1>
+        <div class="card">
+            <h2>General</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Status</td>
+                    <td>{{.Status}}</td>
+                </tr>
+                <tr>
+                    <td>Managed by</td>
+                    <td>
+                        {{if .IsTagged}}
+                            {{range .Tags}}
+                                <span class="tag">{{.}}</span>
+                            {{end}}
+                        {{else}}
+                            {{.Profile.DisplayName}}
+                        {{end}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Machine name</td>
+                    <td>{{.DeviceName}}</td>
+                </tr>
+                <tr>
+                    <td>OS</td>
+                    <td>{{.OS}}</td>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>{{.ID}}</td>
+                </tr>
+                <tr>
+                    <td>Tailscale version</td>
+                    <td>{{.IPNVersion}}</td>
+                </tr>
+                <tr>
+                    <td>Key expiry</td>
+                    <td>
+                        {{if .KeyExpired}}
+                            <span class="datetime">Expired</span>
+                        {{else if .KeyExpiry}}
+                            <span class="datetime">{{.KeyExpiry}}</span>
+                        {{else}}
+                            <span class="datetime">No expiry</span>
+                        {{end}}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <h2>Addresses</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Tailscale IPv4</td>
+                    <td>{{.IPv4}}</td>
+                </tr>
+                <tr>
+                    <td>Tailscale IPv6</td>
+                    <td>{{.IPv6}}</td>
+                </tr>
+                <tr>
+                    <td>Short domain</td>
+                    <td>{{.DeviceName}}</td>
+                </tr>
+                <tr>
+                    <td>Full domain</td>
+                    <td>{{.DeviceName}}.{{.TailnetName}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        {{with .RouteInfo}}
+        <div class="card">
+            <h2>Routes</h2>
+            <table>
+                <tbody>
+                {{if .UsingExitNode}}
+                    <tr>
+                        <td>Exit node</td>
+                        <td>{{.UsingExitNode.Name}}</td>
+                    </tr>
+                {{else}}
+                    <tr>
+                        <td>Advertising exit node</td>
+                        <td>
+                            {{if .AdvertisingExitNode}}Yes{{else}}No{{end}}
+                        </td>
+                    </tr>
+                    {{if .AdvertisingExitNode}}
+                        <tr>
+                            <td>Exit node approved</td>
+                            <td>
+                                {{if .AdvertisingExitNodeApproved}}
+                                    Yes
+                                {{else}}
+                                    No
+                                {{end}}
+                            </td>
+                        </tr>
+                    {{end}}
+                {{end}}
+                <tr>
+                    <td>Advertising routes</td>
+                    <td>
+                        {{if .AdvertisedRoutes}}
+                            Yes
+                        {{else}}
+                            No
+                        {{end}}
+                    </td>
+                </tr>
+                {{if .AdvertisedRoutes}}
+                    <tr>
+                        <td>Advertised routes</td>
+                        <td>
+                            {{range .AdvertisedRoutes}}
+                                <span class="route">{{.Route}} {{if .Approved}}Approved{{end}}</span><br/>
+                            {{end}}
+                        </td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+            {{end}}
+        </div>
+        <div class="card">
+            <h2>Debug</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>TUN Mode</td>
+                    <td>
+                        {{if .TUNMode}}
+                            Yes
+                        {{else}}
+                            No
+                        {{end}}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{{end}}
+{{if not .TailscaleStatus}}
+    <div>
+        <h1>Tailscale</h1>
+        <div class="card">
+            Tailscale status not available.
+            <div class="card error">
+                {{.TailscaleError}}
+            </div>
+        </div>
+    </div>
+{{end}}
+{{with .WireGuardStatus}}
+    <div>
+        <h1>WireGuard</h1>
+        <div class="card">
+            <h2>Device</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Interface</td>
+                    <td>{{.Name}}</td>
+                </tr>
+                <tr>
+                    <td>Public key</td>
+                    <td>{{.PublicKey}}</td>
+                </tr>
+                <tr>
+                    <td>Listening port</td>
+                    <td>{{.ListenPort}}</td>
+                </tr>
+
+                <tr>
+                    <td>Firewall mark</td>
+                    <td>{{.FirewallMark}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        {{range $index, $peer := .Peers}}
+            <div class="card">
+                <h2>Peer {{$index}}</h2>
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>Public key</td>
+                        <td>{{.PublicKey}}</td>
+                    </tr>
+                    {{if .Endpoint}}
+                        <tr>
+                            <td>Endpoint</td>
+                            <td>{{.Endpoint}}</td>
+                        </tr>
+                    {{end}}
+                    <tr>
+                        <td>Allowed IPs</td>
+                        <td>
+                            {{range .AllowedIPs}}
+                                <span class="ip-address">{{.}}</span>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{if .Endpoint}}
+                        <tr>
+                            <td>Latest handshake</td>
+                            <td>{{.LastHandshakeTimeAgo}} ago</td>
+                        </tr>
+                        <tr>
+                            <td>Transfer</td>
+                            <td>{{.ReceiveBytesStr}} received, {{.TransmitBytesStr}} sent</td>
+                        </tr>
+                    {{end}}
+                    {{if .PersistentKeepaliveInterval}}
+                        <tr>
+                            <td>Persistent keepalive</td>
+                            <td>{{.PersistentKeepaliveInterval}}</td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div>
+        {{end}}
+    </div>
+{{end}}
+{{if not .WireGuardStatus}}
+    <div>
+        <h1>WireGuard</h1>
+        <div class="card">
+            WireGuard status for interface {{.TailGuardConfig.WireGuardDevice}} not available.
+            <div class="card error">
+                {{.WireGuardError}}
+            </div>
+        </div>
+    </div>
+{{end}}
+</body>
+</html>

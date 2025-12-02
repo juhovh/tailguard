@@ -1,0 +1,163 @@
+* {
+    box-sizing: border-box
+}
+
+body {
+    background: #f9f7f6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    padding: 2rem 1rem 1rem;
+    color: #232222;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    max-width: 48rem;
+    margin: 0 auto
+}
+
+.page-header {
+    text-align: center;
+    margin: -2rem -1rem 2.5rem;
+    padding: 2rem 1rem 1.5rem;
+    background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 50%, #374151 100%);
+    border-radius: 0 0 1rem 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1)
+}
+
+.page-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem
+}
+
+.page-icon {
+    color: #e8e3d5;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0
+}
+
+.page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+    color: #fff
+}
+
+.page-header p {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0
+}
+
+h1 {
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin: 2rem 0 .75rem;
+    color: #232222
+}
+
+h2 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .025em;
+    margin: 0 0 .75rem;
+    color: #706e6d
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #eeeae9;
+    border-radius: .375rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem
+}
+
+.card.error {
+    background: #fff5f5;
+    border-color: #feb2b2;
+    color: #742a2a;
+    margin-top: 1rem
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+tbody {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem
+}
+
+tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem
+}
+
+td:first-child {
+    color: #706e6d;
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+td:last-child {
+    font-size: 0.75rem
+}
+
+.tag, .route, .ip-address, .datetime {
+    display: inline-flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #dad6d5;
+    border-radius: 9999px;
+    padding: .25rem .5rem;
+    margin: .125rem .125rem .125rem 0;
+    font-size: 0.6875rem;
+    font-weight: 500
+}
+
+.tag {
+    color: #706e6d
+}
+
+.datetime {
+    background: #fff;
+    color: #232222;
+    border-color: #eeeae9
+}
+
+@media (max-width: 640px) {
+    body {
+        padding: .75rem
+    }
+
+    .card {
+        padding: 1rem
+    }
+
+    h1 {
+        font-size: 1.125rem
+    }
+
+    tr {
+        grid-template-columns: 1fr;
+        gap: .25rem
+    }
+
+    td:first-child {
+        white-space: normal;
+        font-weight: 500
+    }
+
+    td:last-child {
+        grid-column: span 1;
+        padding-left: 0
+    }
+}
+

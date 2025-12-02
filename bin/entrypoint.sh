@@ -13,32 +13,44 @@ if [ ${TG_EXPOSE_HOST:-0} -eq 1 ]; then
   echo "Expose host to Tailscale and WireGuard networks"
 else
   # Default to not exposing the host
-  TG_EXPOSE_HOST=0
+  export TG_EXPOSE_HOST=0
 fi
 
 if [ ${TG_CLIENT_MODE:-0} -eq 1 ]; then
   echo "Using Tailscale client mode, advertisements disabled, exit node allowed"
 else
   # Default to not being in client mode
-  TG_CLIENT_MODE=0
+  export TG_CLIENT_MODE=0
+fi
+
+PORT_REGEX="^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$"
+if [ -z "${TG_WEBUI_PORT+set}" ]; then
+  # If not set, we simply disable WebUI
+  echo "WebUI not enabled for this instance"
+elif echo "${TG_WEBUI_PORT}" | grep -Eq "$PORT_REGEX"; then
+  echo "WebUI enabled on port $TG_WEBUI_PORT"
+  export TG_WEBUI_PORT
+else
+  echo "Invalid \$TG_WEBUI_PORT value: $TG_WEBUI_PORT"
+  exit 1
 fi
 
 if [ -z "${TG_NAMESERVERS+set}" ]; then
   echo "Environment variable \$TS_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
-  TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
+  export TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
 fi
 
 # Check that the WireGuard device env variable is set
 if [ -z "${WG_DEVICE+set}" ]; then
   echo "Environment variable \$WG_DEVICE is not set, defaulting to wg0"
-  WG_DEVICE="wg0"
+  export WG_DEVICE="wg0"
 fi
 
 if [ ${WG_ISOLATE_PEERS:-0} -eq 1 ]; then
   echo "Isolating WireGuard peers from each other"
 else
   # Default to not isolating peers
-  WG_ISOLATE_PEERS=0
+  export WG_ISOLATE_PEERS=0
 fi
 
 # Check that the config file exists and has the right permissions
@@ -52,13 +64,13 @@ chmod 600 "${WG_CONF_PATH}"
 # Check that the Tailscale device env variable is set
 if [ -z "${TS_DEVICE+set}" ]; then
   echo "Environment variable \$TS_DEVICE is not set, defaulting to tailscale0"
-  TS_DEVICE="tailscale0"
+  export TS_DEVICE="tailscale0"
 fi
 
 # Check that the Tailscale port env variable is set
 if [ -z "${TS_PORT+set}" ]; then
   echo "Environment variable \$TS_PORT is not set, defaulting to 41641"
-  TS_PORT="41641"
+  export TS_PORT="41641"
 fi
 
 # Validate TS_DEST_IP to contain exactly one IPv4 and/or one IPv6 address
@@ -75,13 +87,6 @@ if [ -n "${TS_DEST_IP}" ]; then
       exit 1
     fi
   done
-fi
-
-if [ ${TS_WEBCLIENT:-0} -eq 1 ]; then
-  echo "Enabling the Tailscale web interface"
-else
-  # Default to not enabling the web interface
-  TS_WEBCLIENT=0
 fi
 
 # https://tailscale.com/kb/1320/performance-best-practices#ethtool-configuration
@@ -156,6 +161,10 @@ iptables -P INPUT DROP
 
 # Create a chain for TailGuard input, dropping incoming connections
 iptables -N tg-input
+if [ -n "${TG_WEBUI_PORT}" ]; then
+  iptables -A tg-input -i "${WG_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+  iptables -A tg-input -i "${TS_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+fi
 if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
   iptables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
   iptables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
@@ -190,6 +199,10 @@ ip6tables -P INPUT DROP
 
 # Create a chain for TailGuard input, dropping incoming connections
 ip6tables -N tg-input
+if [ -n "${TG_WEBUI_PORT}" ]; then
+  ip6tables -A tg-input -i "${WG_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+  ip6tables -A tg-input -i "${TS_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
+fi
 if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
   ip6tables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
   ip6tables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
@@ -237,6 +250,17 @@ ip -6 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
 echo "All rules set up, waiting for healthcheck for finalisation"
 
 echo "******************************"
+echo "** Start TailGuard daemon   **"
+echo "******************************"
+
+if [ -n "${TG_WEBUI_PORT}" ]; then
+  echo "Starting daemon, listening on port ${TG_WEBUI_PORT}"
+  /usr/local/bin/tgdaemon --port ${TG_WEBUI_PORT} &
+else
+  echo "WebUI not enabled, daemon not started"
+fi
+
+echo "******************************"
 echo "** Start Tailscale daemon   **"
 echo "******************************"
 
@@ -281,11 +305,6 @@ if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-serve
 if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access"; fi
 if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 export TS_EXTRA_ARGS
-
-if [ ${TS_WEBCLIENT} -eq 1 ]; then
-  echo "Adding webclient enablement to a delayed script"
-  echo "tailscale set --webclient" >> "${DELAYED_SCRIPT_PATH}"
-fi
 
 # Set the exit node information second time in healthcheck.sh once the system is healthy,
 # since autoselection in Tailscale doesn't work for some reason when set on startup,
