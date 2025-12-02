@@ -6,6 +6,8 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/juhovh/tailguard/tgdaemon/client/tailscale"
 	"github.com/juhovh/tailguard/tgdaemon/client/wireguard"
@@ -28,6 +30,9 @@ type Server struct {
 	tgConfig env.TailGuardConfig
 	tsClient *tailscale.Client
 	wgClient *wireguard.Client
+
+	lastRequest time.Time
+	mu          sync.Mutex
 }
 
 func NewServer(cfg env.TailGuardConfig) *Server {
@@ -50,6 +55,22 @@ func NewServer(cfg env.TailGuardConfig) *Server {
 		tgConfig: cfg,
 		tsClient: tsClient,
 		wgClient: wgClient,
+	}
+}
+
+func (s *Server) rateLimitMiddleware(next http.HandlerFunc, cooldown time.Duration) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		s.mu.Lock()
+		now := time.Now()
+		if !s.lastRequest.IsZero() && now.Sub(s.lastRequest) < cooldown {
+			s.mu.Unlock()
+			http.Error(w, "Rate limit exceeded. Try again later.", http.StatusTooManyRequests)
+			return
+		}
+		s.lastRequest = now
+		s.mu.Unlock()
+
+		next(w, req)
 	}
 }
 
@@ -94,7 +115,7 @@ func (s *Server) ListenAndServe(addr string) {
 			http.NotFound(w, req)
 			return
 		}
-		s.index(w, req)
+		s.rateLimitMiddleware(s.index, time.Second)(w, req)
 	})
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {
