@@ -183,7 +183,7 @@
                         <td>Advertised routes</td>
                         <td>
                             {{range .AdvertisedRoutes}}
-                                <span class="route">{{.Route}} {{if .Approved}}Approved{{end}}</span><br/>
+                                <span class="route">{{.Route}} {{if .Approved}}&#x2705;{{else}}&#x274C;{{end}}</span><br/>
                             {{end}}
                         </td>
                     </tr>
