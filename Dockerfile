@@ -24,7 +24,7 @@ RUN go mod download
 ARG TARGETARCH
 RUN \
   eval `CGO_ENABLED=0 GOOS=$(go env GOHOSTOS) GOARCH=$(go env GOHOSTARCH) go run ./cmd/mkversion` && \
-  VERSION_LONG="$(echo $VERSION_LONG | rev | cut -d "-" -f 3- | rev) (TailGuard)" && \
+  VERSION_LONG="$(echo $VERSION_LONG | rev | cut -d "-" -f 3- | rev)-TailGuard" && \
   GOARCH=$TARGETARCH go install -ldflags="\
       -X 'tailscale.com/version.longStamp=$VERSION_LONG' \
       -X 'tailscale.com/version.shortStamp=$VERSION_SHORT' \
