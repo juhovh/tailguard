@@ -128,6 +128,23 @@ Some of these parameteres follow the naming of Tailscale Docker image
 [parameters](https://tailscale.com/kb/1282/docker), in which case they should
 also work the same way.
 
+### TailGuard Web UI
+
+TailGuard provides a single web page that can be used to monitor both Tailscale
+and all the WireGuard tunnels configured. It is not enabled by default, and to
+enable the Web UI you need to set the `TG_WEBUI_PORT` environment variable, for
+example `TG_WEBUI_PORT=8080`.
+
+You don't need to enable `TG_EXPOSE_HOST` to use the feature, the Web UI port
+will be available from both the Tailscale and WireGuard networks. However, do
+note that if you have enabled `TS_DEST_IP` to route Tailscale traffic to a
+different IP address, then you cannot access the Web UI with the corresponding
+Tailscale IP.
+
+Please see a screenshot of the Web UI (with node specific details redacted) below:
+
+<img width="608" height="761" alt="TailGuard Web UI" src="https://github.com/user-attachments/assets/981fe0bc-3938-4a90-8f03-959ed4848880" />
+
 ### Two-way routing between the networks
 
 Unlike Tailscale, WireGuard itself does not handle any routing. Therefore, the
