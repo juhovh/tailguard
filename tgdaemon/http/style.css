@@ -153,7 +153,6 @@ td:last-child {
 
     td:last-child {
         grid-column: span 1;
-        padding-left: 0
     }
 }
 
