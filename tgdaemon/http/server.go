@@ -14,6 +14,9 @@ import (
 	"github.com/juhovh/tailguard/tgdaemon/env"
 )
 
+//go:embed favicon.svg
+var favicon string
+
 //go:embed logo.svg
 var logo string
 
@@ -110,12 +113,17 @@ func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 func (s *Server) ListenAndServe(addr string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		if req.URL.Path != "/" {
-			s.log.Warn("404 Not Found", slog.String("path", req.URL.Path))
-			http.NotFound(w, req)
+		if req.URL.Path == "/" {
+			s.rateLimitMiddleware(s.index, time.Second)(w, req)
+			return
+		} else if req.URL.Path == "/favicon.svg" {
+			w.Header().Set("Content-Type", "image/svg+xml")
+			_, _ = w.Write([]byte(favicon))
 			return
 		}
-		s.rateLimitMiddleware(s.index, time.Second)(w, req)
+
+		s.log.Warn("404 Not Found", slog.String("path", req.URL.Path))
+		http.NotFound(w, req)
 	})
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {
