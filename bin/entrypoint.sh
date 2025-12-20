@@ -97,6 +97,9 @@ if [ -n "$NETDEV" ] && ethtool -k $NETDEV | grep -q rx-udp-gro-forwarding; then
   ethtool -K $NETDEV rx-udp-gro-forwarding on rx-gro-list off
 fi
 
+echo "Initialising resolvconf with the existing default config"
+resolvconf -u && cat /etc/resolv.conf.bak | resolvconf -a eth0
+
 # Create wireguard device and set it up
 echo "******************************"
 echo "** Start WireGuard device   **"
@@ -142,8 +145,11 @@ for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
     # No default route for the given address family, skip adding the nameserver
     continue
   fi
-  (resolvconf -l "${WG_DEVICE}" 2>/dev/null; echo "nameserver $nameserver") | resolvconf -a "${WG_DEVICE}"
+  (resolvconf -l "${WG_DEVICE}" 2>/dev/null; echo "nameserver $nameserver") | grep -v '^#' | resolvconf -a "${WG_DEVICE}"
 done
+
+# Delete the old eth0 resolvconf created at the beginning
+resolvconf -d eth0
 
 # Include reresolve-dns script to run every minute in crontab, start crond in background
 echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
