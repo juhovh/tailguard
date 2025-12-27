@@ -143,7 +143,7 @@ Tailscale IP.
 
 Please see a screenshot of the Web UI (with node specific details redacted) below:
 
-<img width="608" height="761" alt="TailGuard Web UI" src="https://github.com/user-attachments/assets/981fe0bc-3938-4a90-8f03-959ed4848880" />
+<img width="608" height="761" alt="TailGuard Web UI" src="https://github.com/user-attachments/assets/dd69af40-ecac-4035-ba1b-44a62458f3de" />
 
 ### Two-way routing between the networks
 
