@@ -10,7 +10,7 @@ RUN git -c advice.detachedHead=false clone --branch "$WG_TOOLS_VERSION" \
 
 # Clone latest Tailscale version and patch it with customisation, some patches
 # are lifted from the PR https://github.com/tailscale/tailscale/pull/14575
-ARG TS_VERSION="v1.92.4"
+ARG TS_VERSION="v1.92.5"
 WORKDIR /go/src/tailscale
 COPY ./tailscale-patches /tmp/tailscale-patches
 RUN \
