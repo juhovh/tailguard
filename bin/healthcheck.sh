@@ -49,7 +49,9 @@ if [ $HEALTHZ_CODE != "200" ]; then
 fi
 
 # Record the healthy epoch to file for reference
-echo "$(date +%s)" > "${HEALTHY_EPOCH_PATH}"
+if [ ! -f "${HEALTHY_EPOCH_PATH}" ]; then
+  echo "$(date +%s)" > "${HEALTHY_EPOCH_PATH}"
+fi
 
 # Run delayed script if present, generally created by entrypoint.sh
 if [ -f "${DELAYED_SCRIPT_PATH}" ]; then
