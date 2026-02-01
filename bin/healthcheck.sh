@@ -3,6 +3,7 @@
 # This is a path to execute scripts on a healthy Tailscale, 
 # must be the same path as set in entrypoint.sh
 DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
+HEALTHY_EPOCH_PATH="/tailguard/.healthy-epoch"
 
 update_firewall() {
   if ! $iptables -C $CHAIN -j "ts-$chain" 2>/dev/null; then
@@ -41,7 +42,14 @@ done
 # Check Tailscale health using the health check endpoint
 HEALTHZ_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:9002/healthz")"
 echo "Tailscale health endpoint returned response code: ${HEALTHZ_CODE}"
-if [ $HEALTHZ_CODE != "200" ]; then exit 1; fi
+if [ $HEALTHZ_CODE != "200" ]; then
+  # The system is not healthy, delete epoch if present
+  rm -f "${HEALTHY_EPOCH_PATH}"
+  exit 1
+fi
+
+# Record the healthy epoch to file for reference
+echo "$(date +%s)" > "${HEALTHY_EPOCH_PATH}"
 
 # Run delayed script if present, generally created by entrypoint.sh
 if [ -f "${DELAYED_SCRIPT_PATH}" ]; then

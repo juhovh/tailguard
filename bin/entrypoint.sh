@@ -4,6 +4,7 @@ set -e
 # This is a path to execute scripts on a healthy Tailscale,
 # must be the same path as set in healtcheck.sh
 DELAYED_SCRIPT_PATH="/tailguard/.delayed-script.sh"
+STARTUP_EPOCH_PATH="/tailguard/.startup-epoch"
 
 # Use the top 8 bits for WireGuard forwarding mark, they
 # are not used by neither Tailscale nor wg-quick scripts
@@ -319,6 +320,9 @@ if [ -n "${TS_EXIT_NODE}" ]; then
   echo "Adding re-setting of the exit node to a delayed script to support autoselect"
   echo "tailscale set --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access" >> "${DELAYED_SCRIPT_PATH}"
 fi
+
+# Record the startup epoch to file for reference
+echo "$(date +%s)" > "${STARTUP_EPOCH_PATH}"
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
 echo "Starting tailscale with args: ${TS_EXTRA_ARGS}"
