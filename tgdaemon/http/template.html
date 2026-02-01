@@ -21,7 +21,7 @@
     </div>
     <p>Network Status Dashboard</p>
 </div>
-{{with .TailGuardConfig}}
+{{with .TailGuardStatus}}
     <div>
         <h1>TailGuard</h1>
         <div class="card">
@@ -55,6 +55,33 @@
                 <tr>
                     <td>Tailscale port</td>
                     <td>{{.TailscalePort}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <h2>Status</h2>
+            <table>
+                <tbody>
+                <tr>
+                    <td>Running since</td>
+                    <td>
+                        {{if .StartupTime}}
+                        <span class="datetime">{{.StartupTime}}</span>
+                        {{else}}
+                        <span class="datetime">Unknown</span>
+                        {{end}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Healthy since</td>
+                    <td>
+                        {{if .HealthyTime}}
+                        <span class="datetime">{{.HealthyTime}}</span>
+                        {{else}}
+                        <span class="datetime">Unknown</span>
+                        {{end}}
+                    </td>
                 </tr>
                 </tbody>
             </table>

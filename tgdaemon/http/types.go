@@ -13,7 +13,7 @@ type TemplateData struct {
 	Style template.CSS
 	Logo  template.HTML
 
-	TailGuardConfig env.TailGuardConfig
+	TailGuardStatus env.TailGuardStatus
 
 	TailscaleStatus *tailscale.Status
 	TailscaleError  string

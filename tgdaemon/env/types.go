@@ -1,6 +1,6 @@
 package env
 
-type TailGuardConfig struct {
+type TailGuardStatus struct {
 	ExposeHost  bool
 	ClientMode  bool
 	Nameservers string
@@ -10,4 +10,7 @@ type TailGuardConfig struct {
 
 	TailscaleDevice string
 	TailscalePort   int
+
+	StartupTime *string // time.RFC3339
+	HealthyTime *string // time.RFC3339
 }

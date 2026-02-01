@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 )
 
 func getEnv(name string) string {
@@ -28,8 +30,23 @@ func getEnvAsInt(name string) int {
 	return intValue
 }
 
-func GetTailguardConfig() TailGuardConfig {
-	return TailGuardConfig{
+func getEpochAsDateString(filename string) *string {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil
+	}
+	epochStr := strings.TrimSpace(string(data))
+	epochValue, err := strconv.ParseInt(epochStr, 10, 64)
+	if err != nil {
+		return nil
+	}
+	epochTime := time.Unix(epochValue, 0)
+	dateStr := epochTime.Format(time.RFC3339)
+	return &dateStr
+}
+
+func GetTailguardStatus() TailGuardStatus {
+	return TailGuardStatus{
 		ExposeHost:  getEnvAsBool("TG_EXPOSE_HOST"),
 		ClientMode:  getEnvAsBool("TG_CLIENT_MODE"),
 		Nameservers: getEnv("TG_NAMESERVERS"),
@@ -39,5 +56,8 @@ func GetTailguardConfig() TailGuardConfig {
 
 		TailscaleDevice: getEnv("TS_DEVICE"),
 		TailscalePort:   getEnvAsInt("TS_PORT"),
+
+		StartupTime: getEpochAsDateString("/tailguard/.startup-epoch"),
+		HealthyTime: getEpochAsDateString("/tailguard/.healthy-epoch"),
 	}
 }

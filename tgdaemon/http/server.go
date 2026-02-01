@@ -30,7 +30,7 @@ type Server struct {
 	log         *slog.Logger
 	idxTemplate *template.Template
 
-	tgConfig env.TailGuardConfig
+	tgStatus env.TailGuardStatus
 	tsClient *tailscale.Client
 	wgClient *wireguard.Client
 
@@ -38,7 +38,7 @@ type Server struct {
 	mu          sync.Mutex
 }
 
-func NewServer(cfg env.TailGuardConfig) *Server {
+func NewServer() *Server {
 	tsClient, err := tailscale.NewClient()
 	if err != nil {
 		log.Fatalf("Failed to create Tailscale client: %v", err)
@@ -55,7 +55,6 @@ func NewServer(cfg env.TailGuardConfig) *Server {
 		log:         slog.Default(),
 		idxTemplate: idxTemplate,
 
-		tgConfig: cfg,
 		tsClient: tsClient,
 		wgClient: wgClient,
 	}
@@ -80,6 +79,8 @@ func (s *Server) rateLimitMiddleware(next http.HandlerFunc, cooldown time.Durati
 func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 	var tsError, wgError string
 
+	tgStatus := env.GetTailguardStatus()
+
 	tsStatus, err := s.tsClient.GetStatus(req.Context(), req.RemoteAddr)
 	if err != nil {
 		tsError = err.Error()
@@ -95,7 +96,7 @@ func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 		Style: template.CSS(style),
 		Logo:  template.HTML(logo),
 
-		TailGuardConfig: s.tgConfig,
+		TailGuardStatus: tgStatus,
 
 		TailscaleStatus: tsStatus,
 		TailscaleError:  tsError,

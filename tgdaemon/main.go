@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/juhovh/tailguard/tgdaemon/env"
 	"github.com/juhovh/tailguard/tgdaemon/http"
 )
 
@@ -22,8 +21,7 @@ func main() {
 	listenPort := *port
 	fmt.Printf("Listening on port %d\n", listenPort)
 
-	cfg := env.GetTailguardConfig()
-	server := http.NewServer(cfg)
+	server := http.NewServer()
 	defer server.Close()
 
 	server.ListenAndServe(fmt.Sprintf(":%d", listenPort))
