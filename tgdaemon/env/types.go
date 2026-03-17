@@ -10,6 +10,7 @@ type TailGuardStatus struct {
 
 	TailscaleDevice string
 	TailscalePort   int
+	TailscaleDestIP *string
 
 	StartupTime *string // time.RFC3339
 	HealthyTime *string // time.RFC3339

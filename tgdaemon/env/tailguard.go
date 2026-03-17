@@ -16,6 +16,14 @@ func getEnv(name string) string {
 	return valStr
 }
 
+func getEnvOptional(name string) *string {
+	valStr, exists := os.LookupEnv(name)
+	if !exists {
+		return nil
+	}
+	return &valStr
+}
+
 func getEnvAsBool(name string) bool {
 	valStr := getEnv(name)
 	return valStr == "1"
@@ -56,6 +64,7 @@ func GetTailguardStatus() TailGuardStatus {
 
 		TailscaleDevice: getEnv("TS_DEVICE"),
 		TailscalePort:   getEnvAsInt("TS_PORT"),
+		TailscaleDestIP: getEnvOptional("TS_DEST_IP"),
 
 		StartupTime: getEpochAsDateString("/tailguard/.startup-epoch"),
 		HealthyTime: getEpochAsDateString("/tailguard/.healthy-epoch"),

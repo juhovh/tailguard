@@ -56,6 +56,12 @@
                     <td>Tailscale port</td>
                     <td>{{.TailscalePort}}</td>
                 </tr>
+                {{if .TailscaleDestIP}}
+                <tr>
+                    <td>Tailscale destination IP</td>
+                    <td>{{.TailscaleDestIP}}</td>
+                </tr>
+                {{end}}
                 </tbody>
             </table>
         </div>
@@ -325,7 +331,7 @@
     <div>
         <h1>WireGuard</h1>
         <div class="card">
-            WireGuard status for interface {{.TailGuardConfig.WireGuardDevice}} not available.
+            WireGuard status for interface {{.TailGuardStatus.WireGuardDevice}} not available.
             <div class="card error">
                 {{.WireGuardError}}
             </div>

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	_ "embed"
 	"html/template"
 	"log"
@@ -104,11 +105,16 @@ func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 		WireGuardStatus: wgStatus,
 		WireGuardError:  wgError,
 	}
-	err = s.idxTemplate.Execute(w, data)
+
+	// Render into a buffer first to avoid writing partial content on error
+	var buf bytes.Buffer
+	err = s.idxTemplate.Execute(&buf, data)
 	if err != nil {
-		s.log.Error("Error executing template", slog.String("path", req.URL.Path))
+		s.log.Error("Error executing template", slog.String("path", req.URL.Path), err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
+	_, err = w.Write(buf.Bytes())
 }
 
 func (s *Server) ListenAndServe(addr string) {
