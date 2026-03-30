@@ -4,7 +4,7 @@ FROM golang:1.26.1-alpine3.23 AS build-env
 RUN apk add --update --no-cache git
 
 # Clone wireguard-tools for the reresolve-dns.sh script
-ARG WG_TOOLS_VERSION="v1.0.20250521"
+ARG WG_TOOLS_VERSION="v1.0.20260223"
 RUN git -c advice.detachedHead=false clone --branch "$WG_TOOLS_VERSION" \
   https://github.com/WireGuard/wireguard-tools.git /go/src/wireguard-tools
 
