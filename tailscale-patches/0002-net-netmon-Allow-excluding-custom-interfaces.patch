@@ -1,4 +1,4 @@
-From df2b739d2d5957ad767528179b4826be8ce6f71c Mon Sep 17 00:00:00 2001
+From 7cefda52da71d64e5afa7bba5b54429916fab848 Mon Sep 17 00:00:00 2001
 From: Cezar Craciunoiu <cezar.craciunoiu@unikraft.io>
 Date: Wed, 8 Jan 2025 16:48:11 +0200
 Subject: [PATCH 2/3] net/netmon: Allow excluding custom interfaces
@@ -14,7 +14,7 @@ Signed-off-by: Cezar Craciunoiu <cezar.craciunoiu@unikraft.io>
  1 file changed, 9 insertions(+)
 
 diff --git a/net/netmon/state.go b/net/netmon/state.go
-index 70a613bc0..dd14293e9 100644
+index e0015b044..fc12755ca 100644
 --- a/net/netmon/state.go
 +++ b/net/netmon/state.go
 @@ -9,6 +9,8 @@
@@ -41,5 +41,5 @@ index 70a613bc0..dd14293e9 100644
  	// DoS each other by doing traffic amplification, both of them
  	// preferring/trying to use each other for transport. See:
 -- 
-2.51.1
+2.50.1 (Apple Git-155)
 
