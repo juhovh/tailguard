@@ -1,4 +1,4 @@
-From 0bc9192d8b82a2fb1e622cbbdb0cc5d2062dd161 Mon Sep 17 00:00:00 2001
+From da63f4ec26c5529899fb9e48b0257467c96117ae Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Juho=20V=C3=A4h=C3=A4-Herttua?= <juhovh@iki.fi>
 Date: Mon, 20 Oct 2025 01:09:54 +1100
 Subject: [PATCH 3/3] wgengine/router/osrouter: Do not add tailscale rule
@@ -11,10 +11,10 @@ control over the routing rules.
  1 file changed, 7 insertions(+), 4 deletions(-)
 
 diff --git a/wgengine/router/osrouter/router_linux.go b/wgengine/router/osrouter/router_linux.go
-index 3c261c912..3ecd34a2e 100644
+index 41a2a7b90..8786376a7 100644
 --- a/wgengine/router/osrouter/router_linux.go
 +++ b/wgengine/router/osrouter/router_linux.go
-@@ -1305,10 +1305,13 @@ func mustRouteTable(num int) RouteTable {
+@@ -1369,10 +1369,13 @@ func mustRouteTable(num int) RouteTable {
  	// (ie. with no fwmark set), this is the first routing table, so
  	// it takes precedence over all the others, ie. VPN routes always
  	// beat non-VPN routes.
