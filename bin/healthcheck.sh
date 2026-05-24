@@ -53,14 +53,19 @@ if [ ! -f "${HEALTHY_EPOCH_PATH}" ]; then
   echo "$(date +%s)" > "${HEALTHY_EPOCH_PATH}"
 fi
 
-# Run delayed script if present, generally created by entrypoint.sh
-if [ -f "${DELAYED_SCRIPT_PATH}" ]; then
-  DELAYED_SCRIPT=$(cat "${DELAYED_SCRIPT_PATH}")
-  rm "${DELAYED_SCRIPT_PATH}"
-
+# Run delayed script if present, generally created by entrypoint.sh.
+# Atomically claim it via mv so overlapping healthchecks can't double-run.
+RUNNING_SCRIPT_PATH="${DELAYED_SCRIPT_PATH}.running"
+if mv "${DELAYED_SCRIPT_PATH}" "${RUNNING_SCRIPT_PATH}" 2>/dev/null; then
   echo "Executing delayed script on a healthy Tailscale:"
-  for line in "${DELAYED_SCRIPT}"; do
-    echo "[#] $line"
-  done
-  eval "${DELAYED_SCRIPT}"
+  while IFS= read -r line; do
+    [ -n "$line" ] && echo "[#] $line"
+  done < "${RUNNING_SCRIPT_PATH}"
+
+  if sh "${RUNNING_SCRIPT_PATH}"; then
+    rm -f "${RUNNING_SCRIPT_PATH}"
+  else
+    echo "Delayed script failed, leaving it in place for retry"
+    mv "${RUNNING_SCRIPT_PATH}" "${DELAYED_SCRIPT_PATH}"
+  fi
 fi
