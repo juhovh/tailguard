@@ -162,6 +162,9 @@ echo "******************************"
 
 # Drop all incoming packets by default, unless localhost or required
 iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type parameter-problem -j ACCEPT
 iptables -A INPUT -p udp --dport "${WG_LISTEN_PORT}" -j ACCEPT
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -P INPUT DROP
@@ -199,6 +202,8 @@ iptables -t nat -A tg-postrouting -m mark --mark "${WG_FORWARD_MARK}" -j MASQUER
 
 # Drop all incoming packets by default, unless localhost or required
 ip6tables -A INPUT -i lo -j ACCEPT
+ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request -j DROP
+ip6tables -A INPUT -p ipv6-icmp --icmpv6-type redirect -j DROP
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
 ip6tables -A INPUT -p udp --dport "${WG_LISTEN_PORT}" -j ACCEPT
 ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
