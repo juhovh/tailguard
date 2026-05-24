@@ -2,7 +2,6 @@
 
 if [ "$#" -ne 1 ]; then
   echo "Please provide a public address or hostname for the WireGuard server" >&2
-  echo "Please provide the Tailscale IP address of the used exit node" >&2
   echo "Usage: $0 [endpoint]" >&2
   exit 1
 fi
@@ -16,14 +15,14 @@ echo "- Listening on UDP port 51820 for WireGuard client connections"
 echo
 
 echo "Generating server.conf and client.conf for linking Tailscale and WireGuard..."
-$(dirname "$0")/bin/gen-wg-conf \
+"$(dirname "$0")/bin/gen-wg-conf" \
   server.conf 51820 "10.0.0.1/24,fdd0:5808:4c3f::1/64" "10.0.0.2,fdd0:5808:4c3f::2" \
-  client.conf $ADDRESS "10.0.0.2/24,fdd0:5808:4c3f::2/64" "0.0.0.0/0,::/0" "100.100.100.100"
+  client.conf "$ADDRESS" "10.0.0.2/24,fdd0:5808:4c3f::2/64" "0.0.0.0/0,::/0" "100.100.100.100"
 echo "...generation completed successfully!"
 echo
 
 echo "Starting up TailGuard in a container, using client.conf configuration"
-docker network inspect ip6net 2>&1 > /dev/null || docker network create ip6net
+docker network inspect ip6net > /dev/null 2>&1 || docker network create ip6net
 docker run --rm -it \
   -v ./server.conf:/etc/wireguard/wg0.conf -v ./state:/tailguard/state \
   --cap-add NET_ADMIN --device /dev/net/tun \

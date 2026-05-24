@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "$#" -lt 8 ] || [ "$#" -gt 9 ]; then
   echo "Usage: $0 server.conf [Port] [Address] [AllowedIPs] client.conf [Endpoint] [Address] [AllowedIPs] [DNS]" >&2
@@ -33,12 +33,12 @@ CLIENT_ADDRESS=$7
 CLIENT_ALLOWED_IPS=$8
 CLIENT_DNS=$9
 
-# Generate keys for the WireGuard tunnel
+# Generate a private/public key pair for the WireGuard tunnel
 gen_wg_keys() {
-  local wg="docker run -i --entrypoint=wg lscr.io/linuxserver/wireguard:latest"
+  local wg="docker run -i --rm --entrypoint=wg lscr.io/linuxserver/wireguard:latest"
   local private_key=$($wg genkey)
   local public_key=$(echo $private_key | $wg pubkey)
-  WG_KEYS="$private_key $public_key $preshared_key"
+  WG_KEYS="$private_key $public_key"
 }
 
 # Generate preshared key for the WireGuard tunnel
@@ -67,7 +67,13 @@ cat << EOF > "$CLIENT_CONF"
 [Interface]
 PrivateKey = $WG_CLIENT_PRIVATE_KEY
 Address = $CLIENT_ADDRESS
-DNS = $CLIENT_DNS
+EOF
+
+if [ -n "$CLIENT_DNS" ]; then
+  echo "DNS = $CLIENT_DNS" >> "$CLIENT_CONF"
+fi
+
+cat << EOF >> "$CLIENT_CONF"
 
 [Peer]
 PublicKey = $WG_SERVER_PUBLIC_KEY
@@ -76,4 +82,3 @@ AllowedIPs = $CLIENT_ALLOWED_IPS
 Endpoint = $CLIENT_ENDPOINT:$SERVER_PORT
 PersistentKeepalive = 25
 EOF
-
