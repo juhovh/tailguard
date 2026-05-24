@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# We need export -n and it's supported by busybox
+# shellcheck disable=SC3045
+
 set -e
 
 # This is a path to execute scripts on a healthy Tailscale,
@@ -10,14 +14,14 @@ STARTUP_EPOCH_PATH="/tailguard/.startup-epoch"
 # are not used by neither Tailscale nor wg-quick scripts
 WG_FORWARD_MARK="0x1000000/0xff000000"
 
-if [ ${TG_EXPOSE_HOST:-0} -eq 1 ]; then
+if [ "${TG_EXPOSE_HOST:-0}" -eq 1 ]; then
   echo "Expose host to Tailscale and WireGuard networks"
 else
   # Default to not exposing the host
   export TG_EXPOSE_HOST=0
 fi
 
-if [ ${TG_CLIENT_MODE:-0} -eq 1 ]; then
+if [ "${TG_CLIENT_MODE:-0}" -eq 1 ]; then
   echo "Using Tailscale client mode, advertisements disabled, exit node allowed"
 else
   # Default to not being in client mode
@@ -37,7 +41,7 @@ else
 fi
 
 if [ -z "${TG_NAMESERVERS+set}" ]; then
-  echo "Environment variable \$TS_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
+  echo "Environment variable \$TG_NAMESERVERS is not set, using Cloudflare 1.1.1.1 servers"
   export TG_NAMESERVERS="1.1.1.1, 2606:4700:4700::1111, 1.0.0.1, 2606:4700:4700::1001"
 fi
 
@@ -47,7 +51,7 @@ if [ -z "${WG_DEVICE+set}" ]; then
   export WG_DEVICE="wg0"
 fi
 
-if [ ${WG_ISOLATE_PEERS:-0} -eq 1 ]; then
+if [ "${WG_ISOLATE_PEERS:-0}" -eq 1 ]; then
   echo "Isolating WireGuard peers from each other"
 else
   # Default to not isolating peers
@@ -93,9 +97,9 @@ fi
 # https://tailscale.com/kb/1320/performance-best-practices#ethtool-configuration
 NETDEV=$(ip -o -4 route show default | cut -f 5 -d " ")
 [ -z "$NETDEV" ] && NETDEV=$(ip -o -6 route show default | cut -f 5 -d " ")
-if [ -n "$NETDEV" ] && ethtool -k $NETDEV | grep -q rx-udp-gro-forwarding; then
+if [ -n "$NETDEV" ] && ethtool -k "$NETDEV" | grep -q rx-udp-gro-forwarding; then
   echo "Setting rx-udp-gro-forwarding on rx-gro-list off for device $NETDEV"
-  ethtool -K $NETDEV rx-udp-gro-forwarding on rx-gro-list off
+  ethtool -K "$NETDEV" rx-udp-gro-forwarding on rx-gro-list off
 fi
 
 echo "Initialising resolvconf with the existing default config"
@@ -120,7 +124,7 @@ WG_DEFAULT_ROUTES_FOUND=0
 WG_SUBNETS_FOUND=""
 
 for subnet in $(wg show "${WG_DEVICE}" allowed-ips | cut -f 2 | tr ' ' '\n'); do
-  if [[ "$subnet" = "0.0.0.0/0" || "$subnet" = "::/0" ]]; then
+  if [ "$subnet" = "0.0.0.0/0" ] || [ "$subnet" = "::/0" ]; then
     WG_DEFAULT_ROUTES_FOUND=1
     continue
   fi
@@ -144,9 +148,11 @@ for nameserver in $(echo "${TG_NAMESERVERS}" | tr "," "\n"); do
     continue
   elif [ -n "$(ip -4 route show default)" ] && ipcalc -s -c -4 "$nameserver"; then
     echo "Adding a fallback IPv4 nameserver \"$nameserver\""
+    # shellcheck disable=SC2046
     ip route add $(ip -4 route show default | sed -e "s/default/$nameserver/")
   elif [ -n "$(ip -6 route show default)" ] && ipcalc -s -c -6 "$nameserver"; then
     echo "Adding a fallback IPv6 nameserver \"$nameserver\""
+    # shellcheck disable=SC2046
     ip route add $(ip -6 route show default | sed -e "s/default/$nameserver/")
   else
     # No default route for the given address family, skip adding the nameserver
@@ -159,7 +165,10 @@ done
 resolvconf -d eth0
 
 # Include reresolve-dns script to run every minute in crontab, start crond in background
-echo -e "# Re-resolve WireGuard interface DNS\n*\t*\t*\t*\t*\t/tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" >> /etc/crontabs/root
+printf '%s\n' \
+  "# Re-resolve WireGuard interface DNS" \
+  "* * * * * /tailguard/reresolve-dns.sh \"${WG_DEVICE}\"" \
+  >> /etc/crontabs/root
 crond
 
 echo "******************************"
@@ -181,7 +190,7 @@ if [ -n "${TG_WEBUI_PORT}" ]; then
   iptables -A tg-input -i "${WG_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
   iptables -A tg-input -i "${TS_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
 fi
-if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
+if [ "${TG_EXPOSE_HOST}" -eq 1 ]; then
   iptables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
   iptables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
 else
@@ -193,7 +202,7 @@ fi
 # Create a chain for TailGuard forward, drop external destinations
 iptables -P FORWARD DROP
 iptables -N tg-forward
-if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
+if [ "${WG_ISOLATE_PEERS}" -ne 1 ]; then
   iptables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 fi
 iptables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
@@ -221,7 +230,7 @@ if [ -n "${TG_WEBUI_PORT}" ]; then
   ip6tables -A tg-input -i "${WG_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
   ip6tables -A tg-input -i "${TS_DEVICE}" -p tcp --dport "${TG_WEBUI_PORT}" -j ACCEPT
 fi
-if [ ${TG_EXPOSE_HOST} -eq 1 ]; then
+if [ "${TG_EXPOSE_HOST}" -eq 1 ]; then
   ip6tables -A tg-input -i "${WG_DEVICE}" -j ACCEPT
   ip6tables -A tg-input -i "${TS_DEVICE}" -j ACCEPT
 else
@@ -233,7 +242,7 @@ fi
 # Create a chain for TailGuard forward, drop external destinations
 ip6tables -P FORWARD DROP
 ip6tables -N tg-forward
-if [ ${WG_ISOLATE_PEERS} -ne 1 ]; then
+if [ "${WG_ISOLATE_PEERS}" -ne 1 ]; then
   ip6tables -A tg-forward -i "${WG_DEVICE}" -o "${WG_DEVICE}" -j ACCEPT
 fi
 ip6tables -A tg-forward -i "${WG_DEVICE}" ! -o "${TS_DEVICE}" -j DROP
@@ -251,9 +260,9 @@ ip6tables -t mangle -A FORWARD -o "${WG_DEVICE}" -p tcp -m tcp --tcp-flags SYN,R
 ip6tables -t mangle -A FORWARD -o "${TS_DEVICE}" -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
 # Save WireGuard device fwmark in postrouting and restore it in prerouting
-iptables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
+iptables -t mangle -A POSTROUTING -p udp -m mark --mark "${WG_FWMARK}" -j CONNMARK --save-mark
 iptables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
-ip6tables -t mangle -A POSTROUTING -p udp -m mark --mark ${WG_FWMARK} -j CONNMARK --save-mark
+ip6tables -t mangle -A POSTROUTING -p udp -m mark --mark "${WG_FWMARK}" -j CONNMARK --save-mark
 ip6tables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
 
 # Add Tailscale routing table to the routing rules, since it's not
@@ -262,8 +271,8 @@ ip6tables -t mangle -A PREROUTING -p udp -j CONNMARK --restore-mark
 # 5270 and 52 are hardcoded in the Tailscale source code.
 
 echo "Setting Tailscale routing rules for mark ${WG_FWMARK}"
-ip -4 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
-ip -6 rule add not from all fwmark ${WG_FWMARK} lookup 52 pref 5270
+ip -4 rule add not from all fwmark "${WG_FWMARK}" lookup 52 pref 5270
+ip -6 rule add not from all fwmark "${WG_FWMARK}" lookup 52 pref 5270
 
 echo "All rules set up, waiting for healthcheck for finalisation"
 
@@ -273,7 +282,7 @@ echo "******************************"
 
 if [ -n "${TG_WEBUI_PORT}" ]; then
   echo "Starting daemon, listening on port ${TG_WEBUI_PORT}"
-  /usr/local/bin/tgdaemon --port ${TG_WEBUI_PORT} &
+  /usr/local/bin/tgdaemon --port "${TG_WEBUI_PORT}" &
 else
   echo "WebUI not enabled, daemon not started"
 fi
@@ -283,7 +292,7 @@ echo "** Start Tailscale daemon   **"
 echo "******************************"
 
 # See https://tailscale.com/kb/1282/docker for supported parameters
-if [ ${TG_CLIENT_MODE} -eq 1 ]; then
+if [ "${TG_CLIENT_MODE}" -eq 1 ]; then
   # If in client mode, enable DNS but do not allow advertising any routes
   export TS_ACCEPT_DNS="true"
   ADVERTISE_EXIT_NODE=0
@@ -317,11 +326,11 @@ export TS_STATE_DIR="/tailguard/state"
 export TS_USERSPACE="false"
 
 export TS_NETMON_IGNORE="${WG_DEVICE}"
-export TS_TAILSCALED_EXTRA_ARGS="--tun="${TS_DEVICE}" --port=${TS_PORT}"
+export TS_TAILSCALED_EXTRA_ARGS="--tun=${TS_DEVICE} --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
 if [ -n "${TS_EXIT_NODE}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --exit-node=${TS_EXIT_NODE} --exit-node-allow-lan-access"; fi
-if [ ${ADVERTISE_EXIT_NODE} -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
+if [ "${ADVERTISE_EXIT_NODE}" -eq 1 ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --advertise-exit-node"; fi
 export TS_EXTRA_ARGS
 
 # Set the exit node information second time in healthcheck.sh once the system is healthy,
@@ -333,7 +342,7 @@ if [ -n "${TS_EXIT_NODE}" ]; then
 fi
 
 # Record the startup epoch to file for reference
-echo "$(date +%s)" > "${STARTUP_EPOCH_PATH}"
+date +%s > "${STARTUP_EPOCH_PATH}"
 
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
 echo "Starting tailscale with args: ${TS_EXTRA_ARGS}"
