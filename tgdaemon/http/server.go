@@ -2,10 +2,12 @@ package http
 
 import (
 	"bytes"
+	"context"
 	_ "embed"
 	"html/template"
 	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -35,8 +37,10 @@ type Server struct {
 	tsClient *tailscale.Client
 	wgClient *wireguard.Client
 
-	lastRequest time.Time
-	mu          sync.Mutex
+	mu           sync.Mutex
+	lastRequests map[string]time.Time
+
+	httpServer *http.Server
 }
 
 func NewServer() *Server {
@@ -56,21 +60,34 @@ func NewServer() *Server {
 		log:         slog.Default(),
 		idxTemplate: idxTemplate,
 
+		tgStatus: env.LoadStatus(),
 		tsClient: tsClient,
 		wgClient: wgClient,
+
+		lastRequests: make(map[string]time.Time),
 	}
 }
 
 func (s *Server) rateLimitMiddleware(next http.HandlerFunc, cooldown time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		client, _, err := net.SplitHostPort(req.RemoteAddr)
+		if err != nil {
+			client = req.RemoteAddr
+		}
+
 		s.mu.Lock()
 		now := time.Now()
-		if !s.lastRequest.IsZero() && now.Sub(s.lastRequest) < cooldown {
+		if last, ok := s.lastRequests[client]; ok && now.Sub(last) < cooldown {
 			s.mu.Unlock()
 			http.Error(w, "Rate limit exceeded. Try again later.", http.StatusTooManyRequests)
 			return
 		}
-		s.lastRequest = now
+		s.lastRequests[client] = now
+		for ip, t := range s.lastRequests {
+			if now.Sub(t) > time.Hour {
+				delete(s.lastRequests, ip)
+			}
+		}
 		s.mu.Unlock()
 
 		next(w, req)
@@ -80,14 +97,15 @@ func (s *Server) rateLimitMiddleware(next http.HandlerFunc, cooldown time.Durati
 func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 	var tsError, wgError string
 
-	tgStatus := env.GetTailguardStatus()
+	tgStatus := s.tgStatus
+	tgStatus.RefreshTimes()
 
 	tsStatus, err := s.tsClient.GetStatus(req.Context(), req.RemoteAddr)
 	if err != nil {
 		tsError = err.Error()
 	}
 
-	wgStatus, err := s.wgClient.GetStatus(req.Context(), "wg0")
+	wgStatus, err := s.wgClient.GetStatus(req.Context(), tgStatus.WireGuardDevice)
 	if err != nil {
 		wgError = err.Error()
 	}
@@ -108,16 +126,18 @@ func (s *Server) index(w http.ResponseWriter, req *http.Request) {
 
 	// Render into a buffer first to avoid writing partial content on error
 	var buf bytes.Buffer
-	err = s.idxTemplate.Execute(&buf, data)
-	if err != nil {
-		s.log.Error("Error executing template", slog.String("path", req.URL.Path), err)
+	if err := s.idxTemplate.Execute(&buf, data); err != nil {
+		s.log.Error("Error executing template", slog.String("path", req.URL.Path), slog.Any("err", err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	_, err = w.Write(buf.Bytes())
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if _, err := w.Write(buf.Bytes()); err != nil {
+		s.log.Warn("Error writing response", slog.String("path", req.URL.Path), slog.Any("err", err))
+	}
 }
 
-func (s *Server) ListenAndServe(addr string) {
+func (s *Server) ListenAndServe(addr string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path == "/" {
@@ -132,17 +152,22 @@ func (s *Server) ListenAndServe(addr string) {
 		s.log.Warn("404 Not Found", slog.String("path", req.URL.Path))
 		http.NotFound(w, req)
 	})
-	err := http.ListenAndServe(addr, mux)
-	if err != nil {
-		log.Fatal(err)
+
+	s.httpServer = &http.Server{Addr: addr, Handler: mux}
+	s.log.Info("Listening", slog.String("addr", addr))
+	return s.httpServer.ListenAndServe()
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	if s.httpServer == nil {
+		return nil
 	}
-	s.log.Info("Listening on " + addr)
+	return s.httpServer.Shutdown(ctx)
 }
 
 func (s *Server) Close() {
 	s.tsClient.Close()
-	err := s.wgClient.Close()
-	if err != nil {
-		s.log.Warn("Error closing WireGuard client: %v", err)
+	if err := s.wgClient.Close(); err != nil {
+		s.log.Warn("Error closing WireGuard client", slog.Any("err", err))
 	}
 }

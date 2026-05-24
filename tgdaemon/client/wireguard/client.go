@@ -51,7 +51,7 @@ func (c *Client) GetStatus(ctx context.Context, deviceName string) (*Status, err
 		var lastHandshakeTime, lastHandshakeTimeAgo string
 		if !peer.LastHandshakeTime.IsZero() {
 			lastHandshakeTime = peer.LastHandshakeTime.Format(time.RFC3339)
-			lastHandshakeTimeAgo = time.Now().Sub(peer.LastHandshakeTime).Round(time.Second).String()
+			lastHandshakeTimeAgo = time.Since(peer.LastHandshakeTime).Round(time.Second).String()
 		}
 		peers[i] = Peer{
 			PublicKey:                   peer.PublicKey.String(),

@@ -53,7 +53,10 @@ func getEpochAsDateString(filename string) *string {
 	return &dateStr
 }
 
-func GetTailguardStatus() TailGuardStatus {
+// LoadStatus reads static configuration from environment variables.
+// Intended to be called once at startup; missing required variables
+// terminate the process. Time fields are populated by RefreshTimes.
+func LoadStatus() TailGuardStatus {
 	return TailGuardStatus{
 		ExposeHost:  getEnvAsBool("TG_EXPOSE_HOST"),
 		ClientMode:  getEnvAsBool("TG_CLIENT_MODE"),
@@ -65,8 +68,12 @@ func GetTailguardStatus() TailGuardStatus {
 		TailscaleDevice: getEnv("TS_DEVICE"),
 		TailscalePort:   getEnvAsInt("TS_PORT"),
 		TailscaleDestIP: getEnvOptional("TS_DEST_IP"),
-
-		StartupTime: getEpochAsDateString("/tailguard/.startup-epoch"),
-		HealthyTime: getEpochAsDateString("/tailguard/.healthy-epoch"),
 	}
+}
+
+// RefreshTimes updates the StartupTime and HealthyTime fields by reading
+// the epoch files written by entrypoint.sh and healthcheck.sh.
+func (s *TailGuardStatus) RefreshTimes() {
+	s.StartupTime = getEpochAsDateString("/tailguard/.startup-epoch")
+	s.HealthyTime = getEpochAsDateString("/tailguard/.healthy-epoch")
 }

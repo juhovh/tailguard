@@ -1,9 +1,16 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"log"
+	nethttp "net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/juhovh/tailguard/tgdaemon/http"
 )
@@ -18,11 +25,30 @@ func main() {
 		os.Exit(1)
 	}
 
-	listenPort := *port
-	fmt.Printf("Listening on port %d\n", listenPort)
-
 	server := http.NewServer()
 	defer server.Close()
 
-	server.ListenAndServe(fmt.Sprintf(":%d", listenPort))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- server.ListenAndServe(fmt.Sprintf(":%d", *port))
+	}()
+
+	select {
+	case err := <-errCh:
+		if err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
+			log.Fatal(err)
+		}
+	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.Printf("Shutdown error: %v", err)
+		}
+		if err := <-errCh; err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
+			log.Printf("Server error: %v", err)
+		}
+	}
 }

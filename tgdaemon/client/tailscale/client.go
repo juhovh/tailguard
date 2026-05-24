@@ -144,7 +144,10 @@ func (c *Client) GetStatus(ctx context.Context, remoteAddr string) (*Status, err
 	if st.Self.KeyExpiry != nil {
 		keyExpiry = st.Self.KeyExpiry.Format(time.RFC3339)
 	}
-	routeInfo, _ := c.selfRouteStatuses(ctx, st)
+	routeInfo, err := c.selfRouteStatuses(ctx, st)
+	if err != nil {
+		c.log.Warn("Failed to fetch route statuses", slog.Any("err", err))
+	}
 
 	status := &Status{
 		ID:          string(st.Self.ID),
