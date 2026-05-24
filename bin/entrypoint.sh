@@ -99,7 +99,13 @@ if [ -n "$NETDEV" ] && ethtool -k $NETDEV | grep -q rx-udp-gro-forwarding; then
 fi
 
 echo "Initialising resolvconf with the existing default config"
-resolvconf -u && cat /etc/resolv.conf.bak | resolvconf -a eth0
+RUNTIME_RESOLV=$(cat /etc/resolv.conf 2>/dev/null || true)
+resolvconf -u
+if [ -n "${RUNTIME_RESOLV}" ]; then
+  printf '%s\n' "${RUNTIME_RESOLV}" | resolvconf -a eth0
+else
+  echo "No /etc/resolv.conf found at startup, skipping eth0 resolvconf bootstrap"
+fi
 
 # Create wireguard device and set it up
 echo "******************************"
