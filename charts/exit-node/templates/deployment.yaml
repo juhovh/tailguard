@@ -32,7 +32,9 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if or (.Values.serviceAccount).enabled ( eq .Values.tailscale.state.type "Secret") -}}
       serviceAccountName: {{ include "exit-node.serviceAccountName" . }}
+      {{- end }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -42,7 +44,7 @@ spec:
           image: busybox:1.35
           command: ['sh', '-c', 'cp /tmp/wg0.conf /etc/wireguard/wg0.conf','&&', 'sleep', '120']
           volumeMounts:
-            - name: configDir
+            - name: config-dir
               mountPath: /etc/wireguard
             - name: config
               mountPath: /tmp
@@ -102,7 +104,7 @@ spec:
             - name: state
               mountPath: /tailguard/state
             {{- end }}
-            - name: configDir
+            - name: config-dir
               mountPath: /etc/wireguard
             - name: tun
               mountPath: /dev/net/tun
@@ -115,7 +117,7 @@ spec:
         - name: config
           secret:
             secretName: {{ include "exit-node.fullname" . }}
-        - name: configDir
+        - name: config-dir
           emptyDir:
             sizeLimit: 1Mi
         - name: tun
