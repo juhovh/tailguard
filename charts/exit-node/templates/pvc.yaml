@@ -1,0 +1,25 @@
+{{- if eq .Values.tailscale.state.type "PersistentVolumeClaim" }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "exit-node.tailscale.state.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "exit-node.labels" . | nindent 4 }}
+  {{- with .Values.tailscale.state.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- with .Values.tailscale.state.accessModes | default (list "ReadWriteOncePod") }}
+    {{- toYaml . | nindent 4}}
+    {{- end }}
+  resources:
+    requests:
+      storage: 10Mi
+  {{- with .Values.tailscale.state.storageClassName }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  volumeMode: Filesystem
+{{- end }}

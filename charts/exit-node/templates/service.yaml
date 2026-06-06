@@ -1,0 +1,22 @@
+{{- if (.Values.tailguard.webui).enabled | default false -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "exit-node.fullname" . }}
+  labels:
+    {{- include "exit-node.labels" . | nindent 4 }}
+  {{- with .Values.tailguard.webui.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end}}
+spec:
+  type: {{ (.Values.tailguard.webui.service).type | default "ClusterIP" | quote }}
+  ports:
+    - port: {{ (.Values.tailguard.webui.service).port | default 8080 | quote }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "exit-node.selectorLabels" . | nindent 4 }}
+
+{{- end}}
