@@ -1,4 +1,4 @@
-From a5720661bd1261400b2d51b535e9bd24e0d9c406 Mon Sep 17 00:00:00 2001
+From 8fa26137c30419bd619c2d552b9186a882192894 Mon Sep 17 00:00:00 2001
 From: Cezar Craciunoiu <cezar.craciunoiu@gmail.com>
 Date: Wed, 8 Jan 2025 16:43:54 +0200
 Subject: [PATCH 1/3] net/netmon: Do not iterate over problematic interfaces
