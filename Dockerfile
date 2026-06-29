@@ -1,4 +1,4 @@
-FROM golang:1.26.3-alpine3.23 AS build-env
+FROM golang:1.26.4-alpine3.24 AS build-env
 
 # Install latest version of git
 RUN apk add --update --no-cache git
@@ -10,7 +10,7 @@ RUN git -c advice.detachedHead=false clone --branch "$WG_TOOLS_VERSION" \
 
 # Clone latest Tailscale version and patch it with customisation, some patches
 # are lifted from the PR https://github.com/tailscale/tailscale/pull/14575
-ARG TS_VERSION="v1.98.4"
+ARG TS_VERSION="v1.98.5"
 WORKDIR /go/src/tailscale
 COPY ./tailscale-patches /tmp/tailscale-patches
 RUN \
@@ -37,7 +37,7 @@ WORKDIR /go/src/tgdaemon
 RUN go mod download
 RUN go install
 
-FROM alpine:3.23.4
+FROM alpine:3.24.1
 
 RUN \
   apk add --update --no-cache ethtool iptables ip6tables ipcalc curl wireguard-tools wireguard-go && \
