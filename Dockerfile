@@ -37,6 +37,11 @@ WORKDIR /go/src/tgdaemon
 RUN go mod download
 RUN go install
 
+FROM ghcr.io/singlestore-labs/tailscale-manager AS tailscale-manager
+FROM tailscale/tailscale AS tailscale
+
+COPY --from=tailscale-manager /bin/tailscale-manager /bin/tailscale-manager
+
 FROM alpine:3.24.1
 
 RUN \

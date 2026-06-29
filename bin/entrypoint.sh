@@ -325,7 +325,7 @@ export -n TS_SOCKS5_SERVER
 export TS_STATE_DIR="/tailguard/state"
 export TS_USERSPACE="false"
 
-export TS_NETMON_IGNORE="${WG_DEVICE}"
+export TS_NETMON_IGNORE="${WG_DEVICE}":
 export TS_TAILSCALED_EXTRA_ARGS="--tun=${TS_DEVICE} --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
@@ -344,6 +344,11 @@ fi
 # Record the startup epoch to file for reference
 date +%s > "${STARTUP_EPOCH_PATH}"
 
+
+if [ -n "${TS_MANAGER_CONFIG_PATH}" ]; then
+  echo "starting tailscale-manager..."
+  tailscale-manager "${TS_MANAGER_CONFIG_PATH}" --interval "${TS_MANAGER_INTERVAL:-300}" --socket /var/run/tailscale/tailscaled.sock &
+fi
 echo "Starting tailscaled with args: ${TS_TAILSCALED_EXTRA_ARGS}"
 echo "Starting tailscale with args: ${TS_EXTRA_ARGS}"
 
