@@ -325,7 +325,7 @@ export -n TS_SOCKS5_SERVER
 export TS_STATE_DIR="/tailguard/state"
 export TS_USERSPACE="false"
 
-export TS_NETMON_IGNORE="${WG_DEVICE}":
+export TS_NETMON_IGNORE="${WG_DEVICE}"
 export TS_TAILSCALED_EXTRA_ARGS="--tun=${TS_DEVICE} --port=${TS_PORT}"
 TS_EXTRA_ARGS="--reset --accept-routes"
 if [ -n "${TS_LOGIN_SERVER}" ]; then TS_EXTRA_ARGS="$TS_EXTRA_ARGS --login-server=${TS_LOGIN_SERVER}"; fi
