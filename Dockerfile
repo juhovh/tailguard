@@ -38,9 +38,6 @@ RUN go mod download
 RUN go install
 
 FROM ghcr.io/singlestore-labs/tailscale-manager AS tailscale-manager
-FROM tailscale/tailscale AS tailscale
-
-COPY --from=tailscale-manager /bin/tailscale-manager /bin/tailscale-manager
 
 FROM alpine:3.24.1
 
@@ -53,6 +50,7 @@ WORKDIR /tailguard
 
 COPY --from=build-env /go/src/wireguard-tools/contrib/reresolve-dns/reresolve-dns.sh ./
 COPY --from=build-env /go/bin/* /usr/local/bin/
+COPY --from=tailscale-manager /bin/tailscale-manager /usr/local/bin/
 
 COPY bin/* ./
 RUN chmod 755 *.sh
