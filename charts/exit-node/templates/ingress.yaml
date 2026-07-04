@@ -1,0 +1,43 @@
+{{- if (.Values.tailguard.webui.ingress).enabled  -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "exit-node.fullname" . }}
+  labels:
+    {{- include "exit-node.labels" . | nindent 4 }}
+  {{- with .Values.tailguard.webui.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.tailguard.webui.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .Values.tailguard.webui.ingress.tls }}
+  tls:
+    {{- range .Values.tailguard.webui.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.tailguard.webui.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "exit-node.fullname" $ }}
+                port:
+                  number: {{ ($.Values.tailguard.webui.service).port | default 8080 | quote }}
+          {{- end }}
+    {{- end }}
+{{- end }}

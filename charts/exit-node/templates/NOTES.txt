@@ -1,0 +1,4 @@
+The exit node is now installed, 
+
+Check your tailnet for the exit node named:
+  {{ .Release.Name }}
