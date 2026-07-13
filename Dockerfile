@@ -1,4 +1,4 @@
-FROM golang:1.26.4-alpine3.24 AS build-env
+FROM golang:1.26.5-alpine3.24 AS build-env
 
 # Install latest version of git
 RUN apk add --update --no-cache git
