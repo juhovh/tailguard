@@ -1,4 +1,4 @@
-From 2e587f2dce9eb792509e3fef44f4c0750a24c2c0 Mon Sep 17 00:00:00 2001
+From 6a5736ff4c219ff1b98a88d5c9b690358ee1370f Mon Sep 17 00:00:00 2001
 From: Cezar Craciunoiu <cezar.craciunoiu@unikraft.io>
 Date: Wed, 8 Jan 2025 16:48:11 +0200
 Subject: [PATCH 2/3] net/netmon: Allow excluding custom interfaces
