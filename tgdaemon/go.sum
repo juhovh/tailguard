@@ -74,5 +74,5 @@ golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10 h1:3GDAcqdI
 golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10/go.mod h1:T97yPqesLiNrOYxkwmhMI0ZIlJDm+p0PMR8eRVeR5tQ=
 golang.zx2c4.com/wireguard/windows v0.5.3 h1:On6j2Rpn3OEMXqBq00QEDC7bWSZrPIHKIus8eIuExIE=
 golang.zx2c4.com/wireguard/windows v0.5.3/go.mod h1:9TEe8TJmtwyQebdFwAkEWOPr3prrtqm+REGFifP60hI=
-tailscale.com v1.98.8 h1:moVdqYsmD6FtJFbYBcAU7trKypzMfdeeEyJfu8Lf6xw=
-tailscale.com v1.98.8/go.mod h1:zH5+644fVCOozdtB256cRLPMcwv15h/lcyN+/MX1nBc=
+tailscale.com v1.98.9 h1:kedE/YxrAJu3tIJawXe0CUGxyOK1L9oX6cH9qfbmF4Y=
+tailscale.com v1.98.9/go.mod h1:fQIDgzRTC2LfDGEEyVGRxVpysTfjqo5XKyByOms/fC4=
