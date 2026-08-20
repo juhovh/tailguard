@@ -1,10 +1,10 @@
 module github.com/juhovh/tailguard/tgdaemon
 
-go 1.26.5
+go 1.26.6
 
 require (
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10
-	tailscale.com v1.102.2
+	tailscale.com v1.102.3
 )
 
 require (
