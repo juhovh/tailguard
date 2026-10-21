@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10
-	tailscale.com v1.104.1
+	tailscale.com v1.104.2
 )
 
 require (
