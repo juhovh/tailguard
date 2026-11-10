@@ -1,4 +1,4 @@
-FROM golang:1.27.3-alpine3.24 AS build-env
+FROM golang:1.27.4-alpine3.24 AS build-env
 
 # Install latest version of git
 RUN apk add --update --no-cache git
@@ -37,7 +37,7 @@ WORKDIR /go/src/tgdaemon
 RUN go mod download
 RUN go install
 
-FROM alpine:3.24.2
+FROM alpine:3.24.4
 
 RUN \
   apk add --update --no-cache ethtool iptables ip6tables ipcalc curl wireguard-tools wireguard-go && \
