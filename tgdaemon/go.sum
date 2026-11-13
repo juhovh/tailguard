@@ -126,8 +126,8 @@ github.com/tailscale/peercred v0.0.0-20250107143737-35a0c7bd7edc h1:24heQPtnFR+y
 github.com/tailscale/peercred v0.0.0-20250107143737-35a0c7bd7edc/go.mod h1:f93CXfllFsO9ZQVq+Zocb1Gp4G5Fz0b0rXHLOzt/Djc=
 github.com/tailscale/web-client-prebuilt v0.0.0-20260917222731-e0ed2d0d0fea h1:ah5jt6ZnxMvNclt6kBBoLcMpLLjMA44PTsnov2y7gpU=
 github.com/tailscale/web-client-prebuilt v0.0.0-20260917222731-e0ed2d0d0fea/go.mod h1:agQPE6y6ldqCOui2gkIh7ZMztTkIQKH049tv8siLuNQ=
-github.com/tailscale/wireguard-go v0.0.0-20260928213032-417aef361226 h1:v3Lpj2iHPWQDqeCwemQPz4fWweIEMLqBkwJqCjRyJQc=
-github.com/tailscale/wireguard-go v0.0.0-20260928213032-417aef361226/go.mod h1:rUelGmuK4UnSJYM5gl5Mknp6YbwwcL8+VAPMhNYe+jg=
+github.com/tailscale/wireguard-go v0.0.0-20261106233718-9e0ab45c16ca h1:m34ObTyPjPiDaSFWeMk7FBQR8my9wpT98t1EXp5c5X0=
+github.com/tailscale/wireguard-go v0.0.0-20261106233718-9e0ab45c16ca/go.mod h1:rUelGmuK4UnSJYM5gl5Mknp6YbwwcL8+VAPMhNYe+jg=
 github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701 h1:pyC9PaHYZFgEKFdlp3G8RaCKgVpHZnecvArXvPXcFkM=
 github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701/go.mod h1:P3a5rG4X7tI17Nn3aOIAYr5HbIMukwXG0urG0WuL8OA=
 github.com/vishvananda/netns v0.0.5 h1:DfiHV+j8bA32MFM7bfEunvT8IAqQ/NzSJHtcmW5zdEY=
@@ -170,5 +170,5 @@ google.golang.org/protobuf v1.36.12 h1:pJOKDDOyeXErUroCihFAd5LQuwXBSpVnKGrj5o/fw
 google.golang.org/protobuf v1.36.12/go.mod h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco=
 gvisor.dev/gvisor v0.0.0-20260915211658-a6f909f08a72 h1:EytKYr5WrVs+Aah/0xDO8ZAZZzS/iTEVC8ln4ipDbL0=
 gvisor.dev/gvisor v0.0.0-20260915211658-a6f909f08a72/go.mod h1:8aLQqUBHDH8fY5y60lzmwDpMMbQCcT3EBfoSwhfaGCY=
-tailscale.com v1.104.5 h1:TLemRww20+bcQ0FEVTTZ7yMtVDZ4pOpSCL86Oo9g3mA=
-tailscale.com v1.104.5/go.mod h1:Hq4zB8UpaxMW1fvqO30CLVQo3A7Ith0t9MnvEyiuoSA=
+tailscale.com v1.104.7 h1:YqImcXyNIe25x7Qwei8PgbtkjFd3pKed9cFY0Flkitc=
+tailscale.com v1.104.7/go.mod h1:pNl682NgUoac2/Um3khv8pduX3D1YPBZTL067+zo8wY=
